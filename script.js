@@ -220,14 +220,148 @@ Launcher.prototype.draw = function(ctx) {
 const launchManager = new function() {
 
   this.launchers = [];
+  this.patterns = {
+    /*
+    Pattern Rule
+    * Level\Pattern\default,Step\spd,visible,interval,df,Launcher\spd,visible,interval,df,launch **Iterate
+    1.최상위 인덱스는 난이도(Level)를 의미한다
+    2.그 아래 인덱스는 그저 그 난이도(Level) 내에서 몇번 패턴(Pattern)인지를 나타낸다
+    3.패턴 내에서 "default"는 모든 launcher들에 대한 기본값을 나타내며, transition()의 param가 된다.
+    4.Step이란 패턴 내의 default나 iterate를 제외한 숫자들로, 패턴이 준비된 이후로부터 n프레임이 지났을 때 실행할 행동들에 대한 나열이다.
+    ///5.halt는 패턴의 종료를 의미한다
+    6.default나 패턴의 한 step의 바로 아래 단계에서 "spd", "visible", "interval", "df" 이 있을 수 있다.
+      ;transition에서 가장 먼저 찾아보는 값이다, 일부나 전부가 없을 수도 있다. ; 근데 웬만하면 다 써주자
+    7.위의 공통값과는 별개로 각 launcher의 index별로 개별적인 "spd", "visible", "interval", "df" 값이 있을 수 있다.
+      ;전부 존재해야 하며, 위의 공통값과 다른 값이 설정되어 있다면, 그것을 무시하고 개별값을 덮어씌운다.
+    8.default나 Step 아래의 visible의 값은 표시될 launcher의 개수이고, 그 안의 Launcher의 visible은 자신의 visible(true/false)를 나타낸다.
+    9.launch는 Launcher 아래 단계에서만 존재하고, 값은 발사할 탄의 type이다.
+    10.Iterate는 Pattern이나 다른 Iterate 아래 단계에 있어야 하며, Step보단 윗 단계에 위치해야 한다.
+    11.Iterate는 [반복할 횟수,{ step 등의 object literal}]로 구성된다.
+    12.Iterate는 두 프레임을 포함하며, 첫 프레임에서는 iterate의 시작을 알리고, 두번째 프레임에서는 반복할 내용을 11과 같이 적는다
+    13.end는 가장 가까운 iterate의 한 번의 반복의 종료를 의미한다
+      ;continue에 iterate의 후딜레이를 추가한 개념으로, 굳이 없어도 아무 지장이 없다
+    */
+
+    0: {
+      0: {
+        "default": {
+          "spd": Math.PI * 0.005,
+          "visible": 3,
+          "interval": Math.PI * 2 / 3,
+          "df": 0,
+        },
+        10: "iterate",
+        11:[4, {
+          80: {
+            0: {
+              "launch": 0,
+            },
+          },
+          160: {
+            1: {
+              "launch": 0,
+            },
+          },
+          240: {
+            2: {
+              "launch": 0,
+            },
+          },
+        }],
+        12:"halt",
+      }
+    },
+    1: {
+
+    },
+    2: {
+
+    },
+  };
+  this.level = 0;
+  this.currentPattern = Math.trunc(Math.random() * 1);
+  this.patternTimer = -1;
+  this.iterateChecker = [];
+  this.iterateTimer=[];
+
+  this.isTransitioning = 0; //transition중일 때 transitionFrame부터 시작해서 0까지 값을 내립니다.
+  this.transitionFrame = 5;
+
 
   for (let i = 0; i < 9; i++) {
     const newLauncher = new Launcher(i, i * 0.1 * Math.PI, 0, Math.PI * 0.005);
     this.launchers.push(newLauncher);
   }
-
-
 }();
+launchManager.transition = function(param) {
+  if (this.isTransitioning) {
+    if (param?.spd !== undefined && param?.spd !== null) {
+      this.launchers.forEach(e => {
+        const dw = (e.w - param.spd) / this.isTransitioning;
+        if (dw > 0) {
+          e.w - dw;
+        }
+      });
+    }
+    if (param?.interval !== undefined && param?.interval !== null) {
+      const basis = this.launchers[0];
+      this.launchers.forEach(e => {
+        const daz = (e === basis) ? 0 : (e.az - basis.az - param.interval) / this.isTransitioning;
+        if (daz > 0) {
+          e.az - daz;
+        }
+      });
+    }
+    if (param?.df !== undefined && param?.df !== null) {
+      this.launchers.forEach(e => {
+        const ddf = (e.df - param.df) / this.isTransitioning;
+        if (ddf > 0) {
+          e.df - ddf;
+        }
+      });
+    }
+    if (param?.visible !== undefined && param?.visible !== null) {
+      this.launchers.forEach(e => {
+        if (this.isTransitioning === transitionFrame && e.id < param.visible) e.visible = true;
+        else if (this.isTransitioning === 1) e.visible = false;
+      });
+    }
+  }
+}
+launchManager.halt = function() {
+  this.isTransitioning = this.transitionFrame;
+  this.patternTimer = -1;
+  this.iterateChecker.fill(0);
+  this.currentPattern = Math.trunc(Math.random() * 1);
+  //보너스 점수도 더해줘볼까 말까
+}
+launchManager.calculate=function(){
+  const ptrn= this.patterns[this.level]?.[this.currentPattern];
+  let iterateLevel=0;
+  this.iterateChecker.forEach(e=>{iterateLevel=(e>0)?iterateLevel:iterateLevel+1;});
+  if(!this.isTransitioning){
+    if(iterateLevel>0 && this.iterateChecker[iterateLevel]>0)
+    if(ptrn[this.patternTimer]==="halt"){
+      this.halt();
+      return null;
+    }else if (ptrn[this.patternTimer]==="iterate"){
+      this.iterateChecker[0]=ptrn[this.patternTimer+1][0];
+    }else if (ptrn[this.patternTimer]===this.patternTimer){
+      const step = ptrn[this.patternTimer];
+      const basis=this.launchers[0];
+      for (let i =0; i<9;i++){
+        this.launchers[i].w=(step[i]?.spd)?step[i].spd:this.launchers[i].w;
+        this.launchers[i].az=(basis.az+step[i]?.interval)?step[i].spd:this.launchers[i].w;
+        this.launchers[i].df=(step[i]?.df)?step[i].df:this.launchers[i].df;
+        this.launchers[i].visible=(step[i]?.visible)?step[i].visible:this.launchers[i].visible;
+        if(step[i]?.launch){
+          this.launchers[i].launch();
+        }
+      }
+    }
+    this.patternTimer++;
+  }
+}
 
 function Bullet(x, y, dir, type, size, spd, index) {
   this.x = x;
@@ -288,6 +422,7 @@ Bullet.prototype.playerCollideCheck = function() {
   const rr = this.size + player.size;
   if (dx * dx + dy * dy < rr * rr) {
     console.log("collided!:player");
+    BulletPool.return(this);
   }
 }
 Bullet.prototype.outerRingCheck = function() {
@@ -449,7 +584,7 @@ function kineticDraw() {
     if (scoreTimer < 100) { scoreTimer++; }
     else { scoreTimer = 0; scoreDisplay.textContent = parseInt(scoreDisplay.textContent) + 1; }
 
-    //drawing
+    //drawing(+calculating)
     BulletPool.all.forEach(e => { e.move(); e.draw(ctx); });
     player.draw(ctx);
     launchManager.launchers.forEach(e => { e.move(0, 0, 0); e.draw(ctx); })
