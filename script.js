@@ -145,8 +145,8 @@ function Launcher(id, azimuth, declination, w) {
   }
 
 }
-Launcher.prototype.launch = function() {
-  const launchedBullet = BulletPool.pop(0);
+Launcher.prototype.launch = function(type) {
+  const launchedBullet = BulletPool.pop(type);
   launchedBullet.x = this.x;
   launchedBullet.y = this.y;
   launchedBullet.dir = this.az + this.df;
@@ -240,36 +240,33 @@ const launchManager = new function() {
     12.Iterate는 두 프레임을 포함하며, 첫 프레임에서는 iterate의 시작을 알리고, 두번째 프레임에서는 반복할 내용을 11과 같이 적는다
     13.end는 가장 가까운 iterate의 한 번의 반복의 종료를 의미한다
       ;continue에 iterate의 후딜레이를 추가한 개념으로, 굳이 없어도 아무 지장이 없다
+
+    응 다 꺼지고 그냥 [times,length,{context}]로 종결.
+    남는건 default하나임 이상
+    PtrStack이 알아서 lenght되면 종료한걸로 인식할것.
     */
 
     0: {
-      0: {
+      0: [-1, 0, {
         "default": {
           "spd": Math.PI * 0.005,
-          "visible": 3,
-          "interval": Math.PI * 2 / 3,
+          "visible": 2,
+          "interval": Math.PI * 0.6666,
           "df": 0,
         },
-        10: "iterate",
-        11:[4, {
-          80: {
-            0: {
-              "launch": 0,
-            },
-          },
-          160: {
-            1: {
-              "launch": 0,
-            },
-          },
-          240: {
-            2: {
-              "launch": 0,
-            },
-          },
+        0: [4, 120, {
+          40: [0, 0, {
+            "launch": [0, 0],
+          }],
+          80: [0, 0, {
+            "launch": [1, 0],
+          }],
+          120: [0, 0, {
+            "launch": [2, 0],
+          }],
         }],
-        12:"halt",
-      }
+      }],
+
     },
     1: {
 
@@ -280,86 +277,111 @@ const launchManager = new function() {
   };
   this.level = 0;
   this.currentPattern = Math.trunc(Math.random() * 1);
-  this.patternTimer = -1;
-  this.iterateChecker = [];
-  this.iterateTimer=[];
+  this.pointerStack = [null, null, null];
 
-  this.isTransitioning = 0; //transition중일 때 transitionFrame부터 시작해서 0까지 값을 내립니다.
-  this.transitionFrame = 5;
+  this.isTransitioning = 50; //transition중일 때 transitionFrame부터 시작해서 0까지 값을 내립니다.
+  this.transitionFrame = 50;
 
 
   for (let i = 0; i < 9; i++) {
     const newLauncher = new Launcher(i, i * 0.1 * Math.PI, 0, Math.PI * 0.005);
     this.launchers.push(newLauncher);
   }
+  console.log(this.currentPattern);
 }();
 launchManager.transition = function(param) {
   if (this.isTransitioning) {
     if (param?.spd !== undefined && param?.spd !== null) {
       this.launchers.forEach(e => {
         const dw = (e.w - param.spd) / this.isTransitioning;
-        if (dw > 0) {
-          e.w - dw;
+        if (dw !== 0) {
+          e.w -= dw;
         }
       });
     }
     if (param?.interval !== undefined && param?.interval !== null) {
       const basis = this.launchers[0];
       this.launchers.forEach(e => {
-        const daz = (e === basis) ? 0 : (e.az - basis.az - param.interval) / this.isTransitioning;
-        if (daz > 0) {
-          e.az - daz;
+        const daz = (e === basis) ? 0 : clampAngle(e.az - basis.az - param.interval*e.id) / this.isTransitioning;
+        if (daz !== 0) {
+          e.az -= daz;
         }
       });
     }
     if (param?.df !== undefined && param?.df !== null) {
       this.launchers.forEach(e => {
         const ddf = (e.df - param.df) / this.isTransitioning;
-        if (ddf > 0) {
-          e.df - ddf;
+        if (ddf !== 0) {
+          e.df -= ddf;
         }
       });
     }
     if (param?.visible !== undefined && param?.visible !== null) {
       this.launchers.forEach(e => {
-        if (this.isTransitioning === transitionFrame && e.id < param.visible) e.visible = true;
-        else if (this.isTransitioning === 1) e.visible = false;
+        if (this.isTransitioning === this.transitionFrame && e.id < param.visible-1) e.visible = true;
+        else if (this.isTransitioning === 1 && e.id>param.visible-1) e.visible = false;
       });
     }
+    this.isTransitioning--;
   }
 }
 launchManager.halt = function() {
   this.isTransitioning = this.transitionFrame;
-  this.patternTimer = -1;
-  this.iterateChecker.fill(0);
+  this.pointerStack.fill(null);
   this.currentPattern = Math.trunc(Math.random() * 1);
   //보너스 점수도 더해줘볼까 말까
 }
-launchManager.calculate=function(){
-  const ptrn= this.patterns[this.level]?.[this.currentPattern];
-  let iterateLevel=0;
-  this.iterateChecker.forEach(e=>{iterateLevel=(e>0)?iterateLevel:iterateLevel+1;});
-  if(!this.isTransitioning){
-    if(iterateLevel>0 && this.iterateChecker[iterateLevel]>0)
-    if(ptrn[this.patternTimer]==="halt"){
-      this.halt();
-      return null;
-    }else if (ptrn[this.patternTimer]==="iterate"){
-      this.iterateChecker[0]=ptrn[this.patternTimer+1][0];
-    }else if (ptrn[this.patternTimer]===this.patternTimer){
-      const step = ptrn[this.patternTimer];
-      const basis=this.launchers[0];
-      for (let i =0; i<9;i++){
-        this.launchers[i].w=(step[i]?.spd)?step[i].spd:this.launchers[i].w;
-        this.launchers[i].az=(basis.az+step[i]?.interval)?step[i].spd:this.launchers[i].w;
-        this.launchers[i].df=(step[i]?.df)?step[i].df:this.launchers[i].df;
-        this.launchers[i].visible=(step[i]?.visible)?step[i].visible:this.launchers[i].visible;
-        if(step[i]?.launch){
-          this.launchers[i].launch();
+launchManager.calculate = function() {
+  
+  console.log(this.pointerStack);
+  const ptrn = this.patterns[this.level]?.[this.currentPattern];
+  if (this.isTransitioning<=0) {
+    let tempRange = ptrn;
+    let pointerLevel = -1;
+    this.pointerStack.forEach(e => { if (e!==null) pointerLevel++; });
+    for (let i = 0; i <= pointerLevel; i++) {
+      tempRange = tempRange[2][this.pointerStack[pointerLevel]];
+    }
+    //console.log(this.pointerStack,pointerLevel);
+    console.log(tempRange);
+    if (pointerLevel < 0) {
+      //패턴에 처음 들어왔을 때
+      this.pointerStack[0]=0;
+    }else{
+      if (tempRange[0]===0 && tempRange[1]<1){
+        //단일액션스텝
+        for (const key in tempRange[2]){
+          switch(key){
+            case "launch":
+              this.launchers[tempRange[2][key][0]].launch(tempRange[2][key][1]);
+              break;
+            case "":
+              break;
+            default:
+              break;
+          }
+        }
+        this.pointerStack[pointerLevel]=null;
+        this.pointerStack[--pointerLevel]++;
+      }else if(this.pointerStack[pointerLevel]>=tempRange[0]*tempRange[1]){
+        //포인터가 스텝을 넘었을 때
+        this.pointerStack[pointerLevel]=null;
+        if(pointerLevel<0) this.halt();
+        else this.pointerStack[--pointerLevel]++;
+      }else{
+        if(!tempRange[2]?.[this.pointerStack[pointerLevel]]){
+          //현재 프레임에 액션/스텝 없다면 그냥 프레임만 넘기기
+          this.pointerStack[pointerLevel]++;
+        }else{
+          //있다면 일단 들어가고 보기
+          this.pointerStack[++pointerLevel]=0;
         }
       }
     }
-    this.patternTimer++;
+  }else{
+    console.log("transitioning");
+    this.transition(ptrn[2].default);
+    console.log("tran end");
   }
 }
 
@@ -583,6 +605,7 @@ function kineticDraw() {
     player.move();
     if (scoreTimer < 100) { scoreTimer++; }
     else { scoreTimer = 0; scoreDisplay.textContent = parseInt(scoreDisplay.textContent) + 1; }
+    launchManager.calculate();
 
     //drawing(+calculating)
     BulletPool.all.forEach(e => { e.move(); e.draw(ctx); });
@@ -606,4 +629,13 @@ function startStopToggleButtonClicked() {
     staticDraw();
     kineticDraw();
   }
+}
+function clampAngle(angle){
+  while(angle>Math.PI*2){
+    angle-=Math.PI*2;
+  }
+  while(angle<0){
+    angle+=Math.PI*2;
+  }
+  return angle;
 }
