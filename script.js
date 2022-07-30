@@ -117,6 +117,9 @@ const ring = new function() {
     ctx.restore();
   }
 }();
+const ui_hp= new function() {
+  
+}();
 
 function Launcher(id, azimuth, declination, w) {
   this.RELOADFRAME = 5;
@@ -152,17 +155,16 @@ Launcher.prototype.launch = function(type) {
   launchedBullet.x = this.x;
   launchedBullet.y = this.y;
   launchedBullet.dir = this.az + this.df;
-  console.log("launched!");
+  //console.log("launched!");
 
 }
 Launcher.prototype.reload = function(type) {
   this.nextType = type;
   this.cooltime = this.RELOADFRAME;
 }
-Launcher.prototype.move = function(az, df, dw) {
+Launcher.prototype.move = function(az, dw) {
   this.w += dw;
   this.az += az + this.w;
-  this.df = df;
   this.x = kineticCanvas.width / 2 - (Math.cos(this.az) * this.ORBITRADIUS);
   this.y = kineticCanvas.height / 2 - (Math.sin(this.az) * this.ORBITRADIUS);
   if (this.cooltime <= this.RELOADFRAME && this.cooltime > 0) { this.cooltime--; }
@@ -223,73 +225,6 @@ Launcher.prototype.draw = function(ctx) {
 const launchManager = new function() {
 
   this.launchers = [];
-  this.patterns = {
-    /*
-    Pattern Rule
-    * Level\Pattern\default,Step\spd,visible,interval,df,Launcher\spd,visible,interval,df,launch **Iterate
-    1.최상위 인덱스는 난이도(Level)를 의미한다
-    2.그 아래 인덱스는 그저 그 난이도(Level) 내에서 몇번 패턴(Pattern)인지를 나타낸다
-    3.패턴 내에서 "default"는 모든 launcher들에 대한 기본값을 나타내며, transition()의 param가 된다.
-    4.Step이란 패턴 내의 default나 iterate를 제외한 숫자들로, 패턴이 준비된 이후로부터 n프레임이 지났을 때 실행할 행동들에 대한 나열이다.
-    ///5.halt는 패턴의 종료를 의미한다
-    6.default나 패턴의 한 step의 바로 아래 단계에서 "spd", "visible", "interval", "df" 이 있을 수 있다.
-      ;transition에서 가장 먼저 찾아보는 값이다, 일부나 전부가 없을 수도 있다. ; 근데 웬만하면 다 써주자
-    7.위의 공통값과는 별개로 각 launcher의 index별로 개별적인 "spd", "visible", "interval", "df" 값이 있을 수 있다.
-      ;전부 존재해야 하며, 위의 공통값과 다른 값이 설정되어 있다면, 그것을 무시하고 개별값을 덮어씌운다.
-    8.default나 Step 아래의 visible의 값은 표시될 launcher의 개수이고, 그 안의 Launcher의 visible은 자신의 visible(true/false)를 나타낸다.
-    9.launch는 Launcher 아래 단계에서만 존재하고, 값은 발사할 탄의 type이다.
-    10.Iterate는 Pattern이나 다른 Iterate 아래 단계에 있어야 하며, Step보단 윗 단계에 위치해야 한다.
-    11.Iterate는 [반복할 횟수,{ step 등의 object literal}]로 구성된다.
-    12.Iterate는 두 프레임을 포함하며, 첫 프레임에서는 iterate의 시작을 알리고, 두번째 프레임에서는 반복할 내용을 11과 같이 적는다
-    13.end는 가장 가까운 iterate의 한 번의 반복의 종료를 의미한다
-      ;continue에 iterate의 후딜레이를 추가한 개념으로, 굳이 없어도 아무 지장이 없다
-
-    응 다 꺼지고 그냥 [times,length,{context}]로 종결.
-    남는건 default하나임 이상
-    PtrStack이 알아서 lenght되면 종료한걸로 인식할것.
-    */
-
-    0: {
-      0: [-1, 0, {
-        "default": {
-          "spd": Math.PI * 0.005,
-          "visible": 3,
-          "interval": Math.PI * 0.6666,
-          "df": 0,
-        },
-        0: [4, 120, {
-          39: [0, 0, {
-            "launch": [0, 0],
-          }],
-          79: [0, 0, {
-            "launch": [1, 0],
-          }],
-          119: [0, 0, {
-            "launch": [2, 0],
-          }],
-        }],
-      }],
-      1: [-1, 0, {
-        "default": {
-          "spd": Math.PI * 0.008,
-          "visible": 1,
-          "interval": Math.PI * 2,
-          "df": 0,
-        },
-        0: [45, 7, {
-          3: [0, 0, {
-            "launch": [0, 0],
-          }]
-        }]
-      }],
-    },
-    1: {
-
-    },
-    2: {
-
-    },
-  };
   this.level = 0;
   this.currentPattern = Math.trunc(Math.random() * 1);
   this.pointerStack = [null, null, null];
@@ -343,15 +278,15 @@ launchManager.transition = function(param) {
 launchManager.halt = function() {
   this.isTransitioning = this.transitionFrame;
   this.pointerStack.fill(null);
-  this.currentPattern = Math.trunc(Math.random() * 2);
+  this.currentPattern = Math.trunc(Math.random() * 4);
   //보너스 점수도 더해줘볼까 말까
 }
 launchManager.calculate = function() {
 
-  const ptrn = this.patterns[this.level]?.[this.currentPattern];
+  const ptrn = patterns[this.level]?.[this.currentPattern];
   if (this.isTransitioning <= 0) {
 
-    console.log(this.pointerStack);
+    //console.log(this.pointerStack);
     if (this.pointerStack[0] === null) this.pointerStack[0] = 0;
     let tempRange = ptrn;
     let pointerLevel = -1;
@@ -359,20 +294,26 @@ launchManager.calculate = function() {
     for (let i = 0; i < pointerLevel; i++) {
       tempRange = tempRange[2][tempRange[1] === 0 ? this.pointerStack[i] : this.pointerStack[i] % tempRange[1]];
     }
-    console.log(tempRange);
+    //console.log(tempRange);
     if (tempRange[0] === 0) {
       //single action
-      for (const key in tempRange[2]) {
+      Object.entries(tempRange[2]).forEach(entry => {
+        const [key, value] = entry;
+        console.log(key, value);
         switch (key) {
           case "launch":
-            this.launchers[tempRange[2][key][0]].reload(tempRange[2][key][1]);
+            for (let i = 1; i <= value[0]; i++) this.launchers[value[i][0]].reload(value[i][1]);
             break;
-          case "":
+          case "dfset":
+            for (let i = 1; i <= value[0]; i++) this.launchers[value[i][0]].df = value[i][1];
+            break;
+          case "dfplus":
+            for (let i = 1; i <= value[0]; i++) this.launchers[value[i][0]].df += value[i][1];
             break;
           default:
             break;
         }
-      }
+      });
       this.pointerStack[pointerLevel] = null;
       this.pointerStack[--pointerLevel]++;
     } else if (this.pointerStack[pointerLevel] > tempRange[0] * tempRange[1]) {
@@ -437,7 +378,7 @@ launchManager.calculate = function() {
     }
     */
   } else {
-    console.log("transitioning :", this.isTransitioning);
+    //console.log("transitioning :", this.isTransitioning);
     this.transition(ptrn[2].default);
   }
 }
@@ -500,7 +441,7 @@ Bullet.prototype.playerCollideCheck = function() {
   const dy = this.y - player.y;
   const rr = this.size + player.size;
   if (dx * dx + dy * dy < rr * rr) {
-    console.log("collided!:player");
+    //console.log("collided!:player");
     BulletPool.return(this);
   }
 }
@@ -509,7 +450,7 @@ Bullet.prototype.outerRingCheck = function() {
   const dy = this.y - kineticCanvas.height / 2;
   const dr = ring.INNERRADIUS + ring.LINEWIDTH;
   if (dx * dx + dy * dy > dr * dr) {
-    console.log("collided!:ring");
+    //console.log("collided!:ring");
     BulletPool.return(this);
   }
 }
@@ -648,6 +589,8 @@ function staticDraw() {
     background.draw(ctx);
     ring.draw(ctx);
   }
+  document.body.classList.forEach(e => { document.body.classList.remove(e); });
+  document.body.classList.add(theme);
 }
 function kineticDraw() {
   if (kineticCanvas.getContext) {
@@ -667,7 +610,7 @@ function kineticDraw() {
     //drawing(+calculating)
     BulletPool.all.forEach(e => { e.move(); e.draw(ctx); });
     player.draw(ctx);
-    launchManager.launchers.forEach(e => { e.move(0, 0, 0); e.draw(ctx); })
+    launchManager.launchers.forEach(e => { e.move(0, 0); e.draw(ctx); })
 
   } else {
     console.log("not available");
@@ -675,6 +618,19 @@ function kineticDraw() {
     return;
   }
   raf = window.requestAnimationFrame(kineticDraw);
+}
+function uiDraw(ui) {
+  switch (ui){
+    case "all":
+      break;
+    case "hp":
+      break;
+    case "score":
+      break;
+    case "escape":
+      break;
+    default:
+  }
 }
 function startStopToggleButtonClicked() {
   if (!isPaused) {
