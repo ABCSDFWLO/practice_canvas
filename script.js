@@ -7,6 +7,118 @@ let raf = 0;
 let scoreTimer = 0;
 let isPaused = true;
 
+const patterns = {
+  /*
+  Pattern Rule
+  Frame:[iteration,length,{context}]
+  context may have another frame set.
+  empty context is possible ; to implement delay
+  
+  exception 1 : single action frame(ex:"launch":[0,0],"dfset"[0,0]...) has iteration of 0.
+  exception 2 : pattern's highest frame must have "default":{context}
+  exception 2-1 : "default" having all parameters("spd","visible","interval","df") is recommended.
+  */
+
+  0: {
+    0: [-1, 0, {
+      "default": {
+        "spd": Math.PI * 0.005,
+        "visible": 3,
+        "interval": Math.PI * 0.6666,
+        "df": 0,
+      },
+      0: [4, 120, {
+        39: [0, 0, {
+          "launch": [1, [0, 0]],
+        }],
+        79: [0, 0, {
+          "launch": [1, [1, 0]],
+        }],
+        119: [0, 0, {
+          "launch": [1, [2, 0]],
+        }],
+      }],
+      1: [1, 20, {
+        //break time
+      }]
+    }],
+    1: [-1, 0, {
+      "default": {
+        "spd": Math.PI * 0.008,
+        "visible": 1,
+        "interval": Math.PI * 2,
+        "df": 0,
+      },
+      0: [35, 9, {
+        3: [0, 0, {
+          "launch": [1, [0, 0]],
+        }],
+      }],
+    }],
+    2: [-1, 0, {
+      "default": {
+        "spd": Math.PI * 0.005,
+        "visible": 3,
+        "interval": Math.PI * 0.6666,
+        "df": 0,
+      },
+      0: [5, 50, {
+        20: [0, 0, {
+          "launch": [3, [0, 0], [1, 0], [2, 0]],
+        }],
+      }],
+    }],
+    3: [-1, 0, {
+      "default": {
+        "spd": Math.PI * 0.001,
+        "visible": 5,
+        "interval": Math.PI * 0.4,
+        "df": Math.PI * 0.5,
+      },
+      0: [2, 3, {
+        0: [1, 30, {
+          5: [0, 0, {
+            "dfset": [5, [0, Math.PI * 0.5], [1, Math.PI * 0.5], [2, Math.PI * 0.5], [3, Math.PI * 0.5], [4, Math.PI * 0.5]]
+          }],
+        }],
+        1: [5, 5, {
+          1: [0, 0, {
+            "dfplus": [5, [0, -Math.PI * 0.08], [1, -Math.PI * 0.08], [2, -Math.PI * 0.08], [3, -Math.PI * 0.08], [4, -Math.PI * 0.08]],
+          }],
+          4: [0, 0, {
+            "launch": [5, [0, 0], [1, 0], [2, 0], [3, 0], [4, 0]],
+          }],
+        }],
+        2: [1, 20, {
+          //delay
+        }],
+      }],
+    }],
+    4: [-1,0,{
+      "default": {
+        "spd": Math.PI * 0.01,
+        "visible": 2,
+        "interval": Math.PI * 1,
+        "df": 0,
+      },
+      0:[2,120,{
+        30:[0,0,{
+          "launch":[1,[0,2]],
+        }],
+        60:[0,0,{
+          "launch":[1,[1,2]],
+        }],
+      }],
+    }],
+  },
+  1: {
+
+  },
+  2: {
+
+  },
+}
+
 
 const player = new function(x = 200, y = 200, dir = 0, v = 0, w = 0) {
   this.x = x;
@@ -117,8 +229,8 @@ const ring = new function() {
     ctx.restore();
   }
 }();
-const ui_hp= new function() {
-  
+const ui_hp = new function() {
+
 }();
 
 function Launcher(id, azimuth, declination, w) {
@@ -278,7 +390,7 @@ launchManager.transition = function(param) {
 launchManager.halt = function() {
   this.isTransitioning = this.transitionFrame;
   this.pointerStack.fill(null);
-  this.currentPattern = Math.trunc(Math.random() * 4);
+  this.currentPattern = Math.trunc(Math.random() * 5);
   //보너스 점수도 더해줘볼까 말까
 }
 launchManager.calculate = function() {
@@ -383,7 +495,8 @@ launchManager.calculate = function() {
   }
 }
 
-function Bullet(x, y, dir, type, size, spd, index) {
+
+function Bullet(x, y, dir, type, size, spd, index, life) {
   this.x = x;
   this.y = y;
   this.type = type;
@@ -393,6 +506,7 @@ function Bullet(x, y, dir, type, size, spd, index) {
   this.index = index;
 
   this.enabled = false;
+  this.life = life;
 
   this.LINEWIDTH = 5;
   this.fillStyle = {
@@ -407,9 +521,23 @@ function Bullet(x, y, dir, type, size, spd, index) {
 }
 Bullet.prototype.move = function() {
   if (this.enabled) {
-    const dx = this.spd * Math.cos(this.dir);
-    const dy = this.spd * Math.sin(this.dir)
-
+    let dx=0,dy=0;
+    if (this.type < 2) {
+      dx = this.spd * Math.cos(this.dir);
+      dy = this.spd * Math.sin(this.dir);
+    } else if (this.type === 2) {
+      let nx=0,ny=0;
+      if (this.life > 0) {
+        nx = player.x - this.x;
+        ny = player.y - this.y;
+      }else{
+        this.life--;
+      }
+      const r = 1 / Math.sqrt(nx * nx + ny * ny);
+      dx = nx * r * this.spd;
+      dy = ny * r * this.spd;
+      this.dir=Math.atan(ny/nx);
+    }
     this.x += dx;
     this.y += dy;
     //console.log('x:'+this.x+',y:'+this.y);
@@ -427,11 +555,23 @@ Bullet.prototype.draw = function(ctx) {
     ctx.fillStyle = this.fillStyle[theme];
     ctx.strokeStyle = this.strokeStyle[theme];
 
-    ctx.beginPath();
-    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+    switch (this.type) {
+      case 0:
+      case 1:
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        break;
+      case 2:
+        ctx.translate(this.size * 0.5, this.size * 0.5);
+        ctx.rotate(Math.PI * 0.25 + this.dir);
+        ctx.rect(-this.size, -this.size, this.size * 2, this.size * 2);
+        ctx.fill();
+        ctx.stroke();
+        break;
+    }
 
     ctx.restore();
   }
@@ -461,12 +601,13 @@ const BulletPool = new function() {
   this.index = 0;
 
   const typeMap = {
-    0: [5, 5],
-    1: [10, 3],
+    0: [5, 5, null],
+    1: [10, 3, null],
+    2: [5, 2, 100],
   }
 
   this.instantiate = function(type) {
-    const newBullet = new Bullet(0, 0, 0, type, typeMap[type][0], typeMap[type][1], this.index);
+    const newBullet = new Bullet(0, 0, 0, type, typeMap[type][0], typeMap[type][1], this.index, typeMap[type][2]);
     //console.log(newBullet);
     this.index++;
     this.all.push(newBullet);
@@ -619,8 +760,8 @@ function kineticDraw() {
   }
   raf = window.requestAnimationFrame(kineticDraw);
 }
-function uiDraw(ui) {
-  switch (ui){
+function uiDraw(ui, event) {
+  switch (ui) {
     case "all":
       break;
     case "hp":
@@ -645,6 +786,7 @@ function startStopToggleButtonClicked() {
     kineticDraw();
   }
 }
+
 function clampAngle(angle) {
   while (angle > Math.PI * 2) {
     angle -= Math.PI * 2;
