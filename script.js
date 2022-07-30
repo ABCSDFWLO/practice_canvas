@@ -133,6 +133,8 @@ function Launcher(id, azimuth, declination, w) {
   this.y = kineticCanvas.height / 2 - (Math.sin(this.az) * this.ORBITRADIUS);
   this.visible = true;
 
+  this.nextType = null;
+
   this.LINEWIDTH = [5, 0, 0];
   this.SIZERADIUS = [15, 10, 10];
   this.fillStyle = {
@@ -153,7 +155,8 @@ Launcher.prototype.launch = function(type) {
   console.log("launched!");
 
 }
-Launcher.prototype.reload = function() {
+Launcher.prototype.reload = function(type) {
+  this.nextType = type;
   this.cooltime = this.RELOADFRAME;
 }
 Launcher.prototype.move = function(az, df, dw) {
@@ -165,7 +168,7 @@ Launcher.prototype.move = function(az, df, dw) {
   if (this.cooltime <= this.RELOADFRAME && this.cooltime > 0) { this.cooltime--; }
   else if (this.cooltime === 0) {
     this.cooltime = this.RELOADFRAME + 1;
-    this.launch();
+    this.launch(this.nextType);
   }
 }
 Launcher.prototype.draw = function(ctx) {
@@ -250,23 +253,35 @@ const launchManager = new function() {
       0: [-1, 0, {
         "default": {
           "spd": Math.PI * 0.005,
-          "visible": 2,
+          "visible": 3,
           "interval": Math.PI * 0.6666,
           "df": 0,
         },
         0: [4, 120, {
-          40: [0, 0, {
+          39: [0, 0, {
             "launch": [0, 0],
           }],
-          80: [0, 0, {
+          79: [0, 0, {
             "launch": [1, 0],
           }],
-          120: [0, 0, {
+          119: [0, 0, {
             "launch": [2, 0],
           }],
         }],
       }],
-
+      1: [-1, 0, {
+        "default": {
+          "spd": Math.PI * 0.008,
+          "visible": 1,
+          "interval": Math.PI * 2,
+          "df": 0,
+        },
+        0: [45, 7, {
+          3: [0, 0, {
+            "launch": [0, 0],
+          }]
+        }]
+      }],
     },
     1: {
 
@@ -302,7 +317,7 @@ launchManager.transition = function(param) {
     if (param?.interval !== undefined && param?.interval !== null) {
       const basis = this.launchers[0];
       this.launchers.forEach(e => {
-        const daz = (e === basis) ? 0 : clampAngle(e.az - basis.az - param.interval*e.id) / this.isTransitioning;
+        const daz = (e === basis) ? 0 : clampAngle(e.az - basis.az - param.interval * e.id) / this.isTransitioning;
         if (daz !== 0) {
           e.az -= daz;
         }
@@ -318,8 +333,8 @@ launchManager.transition = function(param) {
     }
     if (param?.visible !== undefined && param?.visible !== null) {
       this.launchers.forEach(e => {
-        if (this.isTransitioning === this.transitionFrame && e.id < param.visible-1) e.visible = true;
-        else if (this.isTransitioning === 1 && e.id>param.visible-1) e.visible = false;
+        if (this.isTransitioning === this.transitionFrame && e.id < param.visible) e.visible = true;
+        else if (this.isTransitioning === 1 && e.id > param.visible - 1) e.visible = false;
       });
     }
     this.isTransitioning--;
@@ -328,60 +343,102 @@ launchManager.transition = function(param) {
 launchManager.halt = function() {
   this.isTransitioning = this.transitionFrame;
   this.pointerStack.fill(null);
-  this.currentPattern = Math.trunc(Math.random() * 1);
+  this.currentPattern = Math.trunc(Math.random() * 2);
   //보너스 점수도 더해줘볼까 말까
 }
 launchManager.calculate = function() {
-  
-  console.log(this.pointerStack);
+
   const ptrn = this.patterns[this.level]?.[this.currentPattern];
-  if (this.isTransitioning<=0) {
+  if (this.isTransitioning <= 0) {
+
+    console.log(this.pointerStack);
+    if (this.pointerStack[0] === null) this.pointerStack[0] = 0;
     let tempRange = ptrn;
     let pointerLevel = -1;
-    this.pointerStack.forEach(e => { if (e!==null) pointerLevel++; });
-    for (let i = 0; i <= pointerLevel; i++) {
-      tempRange = tempRange[2][this.pointerStack[pointerLevel]];
+    this.pointerStack.forEach(e => { if (e !== null) pointerLevel++; });
+    for (let i = 0; i < pointerLevel; i++) {
+      tempRange = tempRange[2][tempRange[1] === 0 ? this.pointerStack[i] : this.pointerStack[i] % tempRange[1]];
     }
-    //console.log(this.pointerStack,pointerLevel);
     console.log(tempRange);
+    if (tempRange[0] === 0) {
+      //single action
+      for (const key in tempRange[2]) {
+        switch (key) {
+          case "launch":
+            this.launchers[tempRange[2][key][0]].reload(tempRange[2][key][1]);
+            break;
+          case "":
+            break;
+          default:
+            break;
+        }
+      }
+      this.pointerStack[pointerLevel] = null;
+      this.pointerStack[--pointerLevel]++;
+    } else if (this.pointerStack[pointerLevel] > tempRange[0] * tempRange[1]) {
+      if (pointerLevel === 0) {
+        this.halt();
+      } else {
+        this.pointerStack[pointerLevel] = null;
+        this.pointerStack[--pointerLevel]++;
+      }
+    } else if (tempRange[2][tempRange[1] === 0 ? this.pointerStack[pointerLevel] : this.pointerStack[pointerLevel] % tempRange[1]] === undefined) {
+      this.pointerStack[pointerLevel]++;
+    } else {
+      this.pointerStack[++pointerLevel] = 0;
+    }
+    /*
+    let prevRange = ptrn;
+    let tempRange = ptrn;
+    let pointerLevel = -1;
+    this.pointerStack.forEach(e => { if (e !== null) pointerLevel++; });
+    for (let i = 0; i < pointerLevel - 1; i++) {
+      prevRange = prevRange[2][this.pointerStack[i+1]];
+    }
+    for (let i = 0; i < pointerLevel; i++) {
+      tempRange = tempRange[2][this.pointerStack[i+1]%prevRange[1]];
+    }
+    
+    //console.log(this.pointerStack,pointerLevel);
+    console.log(prevRange, tempRange);
     if (pointerLevel < 0) {
       //패턴에 처음 들어왔을 때
-      this.pointerStack[0]=0;
-    }else{
-      if (tempRange[0]===0 && tempRange[1]<1){
-        //단일액션스텝
-        for (const key in tempRange[2]){
-          switch(key){
-            case "launch":
-              this.launchers[tempRange[2][key][0]].launch(tempRange[2][key][1]);
-              break;
-            case "":
-              break;
-            default:
-              break;
+      this.pointerStack[0] = 0;
+    } else if (this.pointerStack[pointerLevel] > prevRange[0] * prevRange[1]) {
+      //포인터가 스텝을 넘었을 때
+      this.pointerStack[pointerLevel] = null;
+      if (pointerLevel < 0) this.halt();
+      else this.pointerStack[--pointerLevel]++;
+    } else {
+      if (!tempRange) {
+        //현재 프레임에 액션/스텝 없다면 그냥 프레임만 넘기기
+        this.pointerStack[pointerLevel]++;
+      } else {
+        if (tempRange[0] === 0 && tempRange[1] <= 1) {
+          //단일액션스텝
+          for (const key in tempRange[2]) {
+            switch (key) {
+              case "launch":
+                this.launchers[tempRange[2][key][0]].launch(tempRange[2][key][1]);
+                break;
+              case "":
+                break;
+              default:
+                break;
+            }
           }
-        }
-        this.pointerStack[pointerLevel]=null;
-        this.pointerStack[--pointerLevel]++;
-      }else if(this.pointerStack[pointerLevel]>=tempRange[0]*tempRange[1]){
-        //포인터가 스텝을 넘었을 때
-        this.pointerStack[pointerLevel]=null;
-        if(pointerLevel<0) this.halt();
-        else this.pointerStack[--pointerLevel]++;
-      }else{
-        if(!tempRange[2]?.[this.pointerStack[pointerLevel]]){
-          //현재 프레임에 액션/스텝 없다면 그냥 프레임만 넘기기
-          this.pointerStack[pointerLevel]++;
-        }else{
-          //있다면 일단 들어가고 보기
-          this.pointerStack[++pointerLevel]=0;
+          this.pointerStack[pointerLevel] = null;
+          this.pointerStack[--pointerLevel]++;
+
+        } else {
+          this.pointerStack[++pointerLevel] = 0;
         }
       }
     }
-  }else{
-    console.log("transitioning");
+    */
+  } else {
+    console.log("transitioning :", this.isTransitioning);
     this.transition(ptrn[2].default);
-    console.log("tran end");
   }
 }
 
@@ -622,20 +679,22 @@ function kineticDraw() {
 function startStopToggleButtonClicked() {
   if (!isPaused) {
     isPaused = true;
+    btn1.textContent = "start";
     window.cancelAnimationFrame(raf);
   }
   else {
     isPaused = false;
+    btn1.textContent = "stop";
     staticDraw();
     kineticDraw();
   }
 }
-function clampAngle(angle){
-  while(angle>Math.PI*2){
-    angle-=Math.PI*2;
+function clampAngle(angle) {
+  while (angle > Math.PI * 2) {
+    angle -= Math.PI * 2;
   }
-  while(angle<0){
-    angle+=Math.PI*2;
+  while (angle < 0) {
+    angle += Math.PI * 2;
   }
   return angle;
 }
