@@ -530,7 +530,6 @@ Bullet.prototype.move = function() {
       if (this.life > 0) {
         nx = player.x - this.x;
         ny = player.y - this.y;
-      }else{
         this.life--;
       }
       const r = 1 / Math.sqrt(nx * nx + ny * ny);
