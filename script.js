@@ -83,10 +83,10 @@ const patterns = {
         }],
         1: [5, 5, {
           1: [0, 0, {
-            "dfplus": [5, [0, -Math.PI * 0.08], [1, -Math.PI * 0.08], [2, -Math.PI * 0.08], [3, -Math.PI * 0.08], [4, -Math.PI * 0.08]],
+            "launch": [5, [0, 0], [1, 0], [2, 0], [3, 0], [4, 0]],
           }],
           4: [0, 0, {
-            "launch": [5, [0, 0], [1, 0], [2, 0], [3, 0], [4, 0]],
+            "dfplus": [5, [0, -Math.PI * 0.08], [1, -Math.PI * 0.08], [2, -Math.PI * 0.08], [3, -Math.PI * 0.08], [4, -Math.PI * 0.08]],
           }],
         }],
         2: [1, 20, {
@@ -94,19 +94,57 @@ const patterns = {
         }],
       }],
     }],
-    4: [-1,0,{
+    4: [-1, 0, {
       "default": {
         "spd": Math.PI * 0.01,
         "visible": 2,
         "interval": Math.PI * 1,
         "df": 0,
       },
-      0:[2,120,{
-        30:[0,0,{
-          "launch":[1,[0,2]],
+      0: [2, 120, {
+        1: [1, 30, {
+
         }],
-        60:[0,0,{
-          "launch":[1,[1,2]],
+        30: [0, 0, {
+          "launch": [1, [0, 2]],
+        }],
+        60: [0, 0, {
+          "launch": [1, [1, 2]],
+        }],
+        65: [1, 30, {
+          5:[0,0,{
+            "launch": [1, [0, 1]],
+          }],
+        }],
+      }],
+    }],
+    5: [-1, 0, {
+      "default": {
+        "spd": Math.PI * 0.0001,
+        "visible": 1,
+        "interval": Math.PI * 2,
+        "df": Math.PI * 0.38,
+      },
+      0: [1, 30, {
+        10: [20, 5, {
+          2: [0, 0, {
+            "launch": [1, [0, 0]],
+          }],
+          3: [5, 1, {
+            0: [0, 0, {
+              "dfplus": [1, [0, -Math.PI * 0.00666666]],
+            }],
+          }],
+        }],
+        11: [20, 5, {
+          2: [0, 0, {
+            "launch": [1, [0, 0]],
+          }],
+          3: [5, 1, {
+            0: [0, 0, {
+              "dfplus": [1, [0, Math.PI * 0.00666666]],
+            }],
+          }],
         }],
       }],
     }],
@@ -264,11 +302,8 @@ function Launcher(id, azimuth, declination, w) {
 }
 Launcher.prototype.launch = function(type) {
   const launchedBullet = BulletPool.pop(type);
-  launchedBullet.x = this.x;
-  launchedBullet.y = this.y;
-  launchedBullet.dir = this.az + this.df;
+  launchedBullet.initialize(this.x, this.y, this.az + this.df,);
   //console.log("launched!");
-
 }
 Launcher.prototype.reload = function(type) {
   this.nextType = type;
@@ -338,7 +373,7 @@ const launchManager = new function() {
 
   this.launchers = [];
   this.level = 0;
-  this.currentPattern = Math.trunc(Math.random() * 1);
+  this.currentPattern = Math.trunc(Math.random() * 5);
   this.pointerStack = [null, null, null];
 
   this.isTransitioning = 50; //transition중일 때 transitionFrame부터 시작해서 0까지 값을 내립니다.
@@ -390,7 +425,7 @@ launchManager.transition = function(param) {
 launchManager.halt = function() {
   this.isTransitioning = this.transitionFrame;
   this.pointerStack.fill(null);
-  this.currentPattern = Math.trunc(Math.random() * 5);
+  this.currentPattern = Math.trunc(Math.random() * 6);
   //보너스 점수도 더해줘볼까 말까
 }
 launchManager.calculate = function() {
@@ -411,7 +446,7 @@ launchManager.calculate = function() {
       //single action
       Object.entries(tempRange[2]).forEach(entry => {
         const [key, value] = entry;
-        console.log(key, value);
+        //console.log(key, value);
         switch (key) {
           case "launch":
             for (let i = 1; i <= value[0]; i++) this.launchers[value[i][0]].reload(value[i][1]);
@@ -495,18 +530,34 @@ launchManager.calculate = function() {
   }
 }
 
-
-function Bullet(x, y, dir, type, size, spd, index, life) {
-  this.x = x;
-  this.y = y;
+function Bullet(type, index) {
   this.type = type;
-  this.dir = dir;
-  this.size = size;
-  this.spd = spd;
   this.index = index;
 
+  this.x = 0;
+  this.y = 0;
+  this.dir = 0;
+  this.size = 0;
+  this.spd = 0;
   this.enabled = false;
-  this.life = life;
+  this.life = 0;
+  this.nx = 0;
+  this.ny = 0;
+
+
+  this.initialize = function(x, y, dir) {
+    const typeMap = {
+      0: [5, 5, null],
+      1: [10, 3, null],
+      2: [5, 2, 150],
+    }
+    this.x = x;
+    this.y = y;
+    this.dir = dir;
+    this.size = typeMap[this.type][0];
+    this.spd = typeMap[this.type][1];
+    this.life = typeMap[this.type][2];
+  };
 
   this.LINEWIDTH = 5;
   this.fillStyle = {
@@ -521,21 +572,20 @@ function Bullet(x, y, dir, type, size, spd, index, life) {
 }
 Bullet.prototype.move = function() {
   if (this.enabled) {
-    let dx=0,dy=0;
+    let dx = 0, dy = 0;
     if (this.type < 2) {
       dx = this.spd * Math.cos(this.dir);
       dy = this.spd * Math.sin(this.dir);
     } else if (this.type === 2) {
-      let nx=0,ny=0;
       if (this.life > 0) {
-        nx = player.x - this.x;
-        ny = player.y - this.y;
+        this.nx = player.x - this.x;
+        this.ny = player.y - this.y;
         this.life--;
       }
-      const r = 1 / Math.sqrt(nx * nx + ny * ny);
-      dx = nx * r * this.spd;
-      dy = ny * r * this.spd;
-      this.dir=Math.atan(ny/nx);
+      const r = 1 / Math.sqrt(this.nx * this.nx + this.ny * this.ny);
+      dx = this.nx * r * this.spd;
+      dy = this.ny * r * this.spd;
+      this.dir = Math.atan(this.ny / this.nx);
     }
     this.x += dx;
     this.y += dy;
@@ -599,14 +649,9 @@ const BulletPool = new function() {
   this.all = [];
   this.index = 0;
 
-  const typeMap = {
-    0: [5, 5, null],
-    1: [10, 3, null],
-    2: [5, 2, 100],
-  }
 
   this.instantiate = function(type) {
-    const newBullet = new Bullet(0, 0, 0, type, typeMap[type][0], typeMap[type][1], this.index, typeMap[type][2]);
+    const newBullet = new Bullet(type, this.index);
     //console.log(newBullet);
     this.index++;
     this.all.push(newBullet);
@@ -625,7 +670,7 @@ const BulletPool = new function() {
     }
   }
   this.return = function(obj) {
-    console.log(obj.index);
+    //console.log(obj.index);
     obj.enabled = false;
     this.pool.push(obj);
   }
