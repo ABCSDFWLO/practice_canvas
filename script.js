@@ -1,11 +1,13 @@
 const kineticCanvas = document.getElementById("kinetic");
 const staticCanvas = document.getElementById("static");
+const uiCanvas = document.getElementById("ui");
 const scoreDisplay = document.getElementById("score");
 const btn1 = document.getElementById("btn1");
 let theme = 'default';
 let raf = 0;
 let scoreTimer = 0;
 let isPaused = true;
+let isGameOver = false;
 
 const patterns = {
   /*
@@ -194,8 +196,8 @@ player.linearAccel = function(dir) {
   if (this.v > -this.VLIMIT && this.v < this.VLIMIT) { this.v += dir * this.VACC; }
 }
 player.move = function() {
-  const rx = this.x - kineticCanvas.width / 2;
-  const ry = this.y - kineticCanvas.height / 2;
+  const rx = this.x - kineticCanvas.width * 0.5;
+  const ry = this.y - kineticCanvas.height * 0.5;
   const rr = ring.INNERRADIUS - this.SIZERADIUS;
   const dx = Math.cos(this.dir) * this.v;
   const dy = Math.sin(this.dir) * this.v;
@@ -248,7 +250,7 @@ const ring = new function() {
 
   this.draw = function(ctx) {
     ctx.save();
-    ctx.translate(kineticCanvas.width / 2, kineticCanvas.height / 2);
+    ctx.translate(kineticCanvas.width * 0.5, kineticCanvas.height * 0.5);
 
     ctx.fillStyle = this.fillStyle[theme];
 
@@ -267,8 +269,59 @@ const ring = new function() {
     ctx.restore();
   }
 }();
-const ui_hp = new function() {
+const ui_hp_bar = new function() {
+  this.fillStyle = {
+    'default': 'MediumSeaGreen',
+    'dark': 'MediumSeaGreen',
+  };
+  this.strokeStyle={
+    'default': 'black',
+    'dark': 'white',
+  }
+  this.WIDTH = 20;
+  this.LINEWIDTH = 10;
+  this.ARCRANGE=[-Math.PI*0.1666,Math.PI*0.6666];
+  this.hp=1;
 
+  this.id = 'ring';
+
+  this.damage=0.08;
+  this.heal=0.5;
+  
+  this.damaged=function(amount){
+    if (amount) if(this.hp-amount<0){this.hp=0;gameOver();} else {this.hp-=amount;} 
+    else if(this.hp-this.damage<0){this.hp=0;gameOver();} else {this.hp-=this.damage;}   
+  }
+  this.healed=function(amount){
+    if (amount) this.hp=this.hp+amount>1?1:this.hp+amount;
+    else this.hp=this.hp+this.heal>1?1:this.hp+this.heal;
+  }
+  this.draw = function(ctx) {
+    const r=ring.INNERRADIUS+this.LINEWIDTH+this.WIDTH*0.5;
+    
+    ctx.save();
+    ctx.translate(kineticCanvas.width * 0.5, kineticCanvas.height * 0.5);
+    ctx.rotate(this.ARCRANGE[0]);
+
+    //ctx.fillStyle = this.fillStyle[theme];
+    //ctx.strokeStyle=this.strokeStyle[theme];
+
+    ctx.strokeStyle=this.strokeStyle[theme];
+    
+    ctx.lineWidth=this.WIDTH+this.LINEWIDTH*2;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0 - this.LINEWIDTH/r, this.ARCRANGE[1] + this.LINEWIDTH/r);
+    ctx.stroke();
+    
+    ctx.strokeStyle=this.fillStyle[theme];
+    
+    ctx.lineWidth=this.WIDTH;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0 , this.ARCRANGE[1]*this.hp);
+    ctx.stroke();
+
+    ctx.restore();
+  }
 }();
 
 function Launcher(id, azimuth, declination, w) {
@@ -282,8 +335,8 @@ function Launcher(id, azimuth, declination, w) {
 
   this.w = w;
 
-  this.x = kineticCanvas.width / 2 - (Math.cos(this.az) * this.ORBITRADIUS);
-  this.y = kineticCanvas.height / 2 - (Math.sin(this.az) * this.ORBITRADIUS);
+  this.x = kineticCanvas.width * 0.5 - (Math.cos(this.az) * this.ORBITRADIUS);
+  this.y = kineticCanvas.height * 0.5 - (Math.sin(this.az) * this.ORBITRADIUS);
   this.visible = true;
 
   this.nextType = null;
@@ -312,8 +365,8 @@ Launcher.prototype.reload = function(type) {
 Launcher.prototype.move = function(az, dw) {
   this.w += dw;
   this.az += az + this.w;
-  this.x = kineticCanvas.width / 2 - (Math.cos(this.az) * this.ORBITRADIUS);
-  this.y = kineticCanvas.height / 2 - (Math.sin(this.az) * this.ORBITRADIUS);
+  this.x = kineticCanvas.width * 0.5 - (Math.cos(this.az) * this.ORBITRADIUS);
+  this.y = kineticCanvas.height * 0.5 - (Math.sin(this.az) * this.ORBITRADIUS);
   if (this.cooltime <= this.RELOADFRAME && this.cooltime > 0) { this.cooltime--; }
   else if (this.cooltime === 0) {
     this.cooltime = this.RELOADFRAME + 1;
@@ -631,12 +684,13 @@ Bullet.prototype.playerCollideCheck = function() {
   const rr = this.size + player.size;
   if (dx * dx + dy * dy < rr * rr) {
     //console.log("collided!:player");
+    uiDraw('hp',['d']);
     BulletPool.return(this);
   }
 }
 Bullet.prototype.outerRingCheck = function() {
-  const dx = this.x - kineticCanvas.width / 2;
-  const dy = this.y - kineticCanvas.height / 2;
+  const dx = this.x - kineticCanvas.width * 0.5;
+  const dy = this.y - kineticCanvas.height * 0.5;
   const dr = ring.INNERRADIUS + ring.LINEWIDTH;
   if (dx * dx + dy * dy > dr * dr) {
     //console.log("collided!:ring");
@@ -773,6 +827,7 @@ function staticDraw() {
 
     background.draw(ctx);
     ring.draw(ctx);
+    uiDraw('all');
   }
   document.body.classList.forEach(e => { document.body.classList.remove(e); });
   document.body.classList.add(theme);
@@ -802,22 +857,45 @@ function kineticDraw() {
     scoreDisplay.textContent = "not available";
     return;
   }
+  if (isGameOver) { return ; }
   raf = window.requestAnimationFrame(kineticDraw);
 }
 function uiDraw(ui, event) {
-  switch (ui) {
-    case "all":
-      break;
-    case "hp":
-      break;
-    case "score":
-      break;
-    case "escape":
-      break;
-    default:
+  if (uiCanvas.getContext) {
+    const ctx = uiCanvas.getContext('2d');
+    switch (ui) {
+      case "all":
+        uiDraw('hp');
+        uiDraw('score');
+        uiDraw('escape');
+        break;
+      case "hp":
+        if (event){
+        if (event[0]==='d'){
+          ui_hp_bar.damaged(event[1]);
+        }else if (event[0]==='h'){
+          ui_hp_bar.healed(event[1]);
+        }
+        }
+        ui_hp_bar.draw(ctx);
+        break;
+      case "score":
+        break;
+      case "escape":
+        break;
+      default:
+    }
   }
 }
+function gameOver(){
+  console.log("gameover");
+  isGameOver=true;
+  window.cancelAnimationFrame(raf);
+  btn1.textContent="refresh";
+}
+
 function startStopToggleButtonClicked() {
+  if (!isGameOver){
   if (!isPaused) {
     isPaused = true;
     btn1.textContent = "start";
@@ -828,6 +906,10 @@ function startStopToggleButtonClicked() {
     btn1.textContent = "stop";
     staticDraw();
     kineticDraw();
+  }
+  }
+  else{
+    location.reload();
   }
 }
 
