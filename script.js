@@ -42,7 +42,7 @@ const patterns = {
       }],
       1: [1, 20, {
         //break time
-      }]
+      }],
     }],
     1: [-1, 0, {
       "default": {
@@ -160,7 +160,7 @@ const patterns = {
 }
 
 
-const player = new function(x = 200, y = 200, dir = 0, v = 0, w = 0) {
+const player = new function(x = 240, y = 240, dir = 0, v = 0, w = 0) {
   this.x = x;
   this.y = y;
   this.dir = dir;
@@ -238,6 +238,24 @@ player.draw = function(ctx) {
   ctx.restore();
 }
 
+const background = new function() {
+  this.type = {
+    'default': 'rect',
+    'dark': 'rect',
+  }
+  this.color = {
+    'default': 'white',
+    'dark': 'black',
+  }
+}();
+background.draw = function(ctx) {
+  if (this.type[theme] === 'rect') {
+    ctx.save();
+    ctx.fillStyle = this.color[theme];
+    ctx.fillRect(0, 0, kineticCanvas.width, kineticCanvas.height);
+    ctx.restore();
+  }
+}
 const ring = new function() {
   this.fillStyle = {
     'default': 'black',
@@ -282,8 +300,6 @@ const ui_hp_bar = new function() {
   this.LINEWIDTH = 10;
   this.ARCRANGE=[-Math.PI*0.1666,Math.PI*0.6666];
   this.hp=1;
-
-  this.id = 'ring';
 
   this.damage=0.08;
   this.heal=0.5;
@@ -430,7 +446,7 @@ const launchManager = new function() {
   this.pointerStack = [null, null, null];
 
   this.isTransitioning = 50; //transition중일 때 transitionFrame부터 시작해서 0까지 값을 내립니다.
-  this.transitionFrame = 50;
+  this.TRANSITIONFRAME = 50;
 
 
   for (let i = 0; i < 9; i++) {
@@ -468,7 +484,7 @@ launchManager.transition = function(param) {
     }
     if (param?.visible !== undefined && param?.visible !== null) {
       this.launchers.forEach(e => {
-        if (this.isTransitioning === this.transitionFrame && e.id < param.visible) e.visible = true;
+        if (this.isTransitioning === this.TRANSITIONFRAME && e.id < param.visible) e.visible = true;
         else if (this.isTransitioning === 1 && e.id > param.visible - 1) e.visible = false;
       });
     }
@@ -476,7 +492,7 @@ launchManager.transition = function(param) {
   }
 }
 launchManager.halt = function() {
-  this.isTransitioning = this.transitionFrame;
+  this.isTransitioning = this.TRANSITIONFRAME;
   this.pointerStack.fill(null);
   this.currentPattern = Math.trunc(Math.random() * 6);
   //보너스 점수도 더해줘볼까 말까
@@ -528,55 +544,6 @@ launchManager.calculate = function() {
     } else {
       this.pointerStack[++pointerLevel] = 0;
     }
-    /*
-    let prevRange = ptrn;
-    let tempRange = ptrn;
-    let pointerLevel = -1;
-    this.pointerStack.forEach(e => { if (e !== null) pointerLevel++; });
-    for (let i = 0; i < pointerLevel - 1; i++) {
-      prevRange = prevRange[2][this.pointerStack[i+1]];
-    }
-    for (let i = 0; i < pointerLevel; i++) {
-      tempRange = tempRange[2][this.pointerStack[i+1]%prevRange[1]];
-    }
-    
-    //console.log(this.pointerStack,pointerLevel);
-    console.log(prevRange, tempRange);
-    if (pointerLevel < 0) {
-      //패턴에 처음 들어왔을 때
-      this.pointerStack[0] = 0;
-    } else if (this.pointerStack[pointerLevel] > prevRange[0] * prevRange[1]) {
-      //포인터가 스텝을 넘었을 때
-      this.pointerStack[pointerLevel] = null;
-      if (pointerLevel < 0) this.halt();
-      else this.pointerStack[--pointerLevel]++;
-    } else {
-      if (!tempRange) {
-        //현재 프레임에 액션/스텝 없다면 그냥 프레임만 넘기기
-        this.pointerStack[pointerLevel]++;
-      } else {
-        if (tempRange[0] === 0 && tempRange[1] <= 1) {
-          //단일액션스텝
-          for (const key in tempRange[2]) {
-            switch (key) {
-              case "launch":
-                this.launchers[tempRange[2][key][0]].launch(tempRange[2][key][1]);
-                break;
-              case "":
-                break;
-              default:
-                break;
-            }
-          }
-          this.pointerStack[pointerLevel] = null;
-          this.pointerStack[--pointerLevel]++;
-
-        } else {
-          this.pointerStack[++pointerLevel] = 0;
-        }
-      }
-    }
-    */
   } else {
     //console.log("transitioning :", this.isTransitioning);
     this.transition(ptrn[2].default);
@@ -796,30 +763,12 @@ keyEventManager.playerCheck = function() {
   }
 }
 keyEventManager.debugLaunch = function() {
-  if (this.keyPressResult['action0']) launcher0.reload.call(launcher0);
+  if (this.keyPressResult['action0']) launchManager.launchers[0].reload.call(launchManager.launchers[0]);
 }
 
-window.addEventListener('keydown', e => { keyEventManager.keyPressOrigin[e.key] = true; keyEventManager.keyPressUpdate(); })
-window.addEventListener('keyup', e => { keyEventManager.keyPressOrigin[e.key] = false; keyEventManager.keyPressUpdate(); })
+window.addEventListener('keydown', e => { keyEventManager.keyPressOrigin[e.key] = true; keyEventManager.keyPressUpdate(); });
+window.addEventListener('keyup', e => { keyEventManager.keyPressOrigin[e.key] = false; keyEventManager.keyPressUpdate(); });
 
-const background = new function() {
-  this.type = {
-    'default': 'rect',
-    'dark': 'rect',
-  }
-  this.color = {
-    'default': 'white',
-    'dark': 'black',
-  }
-}();
-background.draw = function(ctx) {
-  if (this.type[theme] === 'rect') {
-    ctx.save();
-    ctx.fillStyle = this.color[theme];
-    ctx.fillRect(0, 0, kineticCanvas.width, kineticCanvas.height);
-    ctx.restore();
-  }
-}
 
 function staticDraw() {
   if (staticCanvas.getContext) {
@@ -863,6 +812,8 @@ function kineticDraw() {
 function uiDraw(ui, event) {
   if (uiCanvas.getContext) {
     const ctx = uiCanvas.getContext('2d');
+    ctx.clearRect(0, 0, uiCanvas.width, uiCanvas.height);
+    
     switch (ui) {
       case "all":
         uiDraw('hp');
@@ -877,7 +828,6 @@ function uiDraw(ui, event) {
           ui_hp_bar.healed(event[1]);
         }
         }
-        ui_hp_bar.draw(ctx);
         break;
       case "score":
         break;
@@ -885,6 +835,7 @@ function uiDraw(ui, event) {
         break;
       default:
     }
+    ui_hp_bar.draw(ctx);
   }
 }
 function gameOver(){

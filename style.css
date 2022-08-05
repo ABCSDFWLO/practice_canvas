@@ -23,8 +23,8 @@ canvas{
 }
 #stage{
   display:flex;
-  width:400px;
-  height:400px;
+  width:480px;
+  height:480px;
   position:absolute;
   border:black 10px;
   justify-content:center;
