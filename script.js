@@ -6,6 +6,7 @@ const btn1 = document.getElementById("btn1");
 let theme = 'default';
 let raf = 0;
 let scoreTimer = 0;
+let score = 0;
 let isPaused = true;
 let isGameOver = false;
 
@@ -113,11 +114,6 @@ const patterns = {
         60: [0, 0, {
           "launch": [1, [1, 2]],
         }],
-        65: [1, 30, {
-          5:[0,0,{
-            "launch": [1, [0, 1]],
-          }],
-        }],
       }],
     }],
     5: [-1, 0, {
@@ -152,7 +148,135 @@ const patterns = {
     }],
   },
   1: {
-
+    0: [-1, 0, {
+      "default": {
+        "spd": Math.PI * 0.007,
+        "visible": 3,
+        "interval": Math.PI * 0.6666,
+        "df": 0,
+      },
+      0: [6, 30, {
+        9: [0, 0, {
+          "launch": [1, [0, 0]],
+        }],
+        19: [0, 0, {
+          "launch": [1, [1, 0]],
+        }],
+        29: [0, 0, {
+          "launch": [1, [2, 0]],
+        }],
+      }],
+      1: [1, 30, {
+        //break time
+      }],
+    }],
+    1: [-1, 0, {
+      "default": {
+        "spd": Math.PI * 0.003,
+        "visible": 6,
+        "interval": Math.PI * 0.007,
+        "df": 0,
+      },
+      0: [1, 60, {
+        1: [23, 1, {
+          0: [0, 0, {
+            "dfplus": [6, [0, Math.PI * 0.01], [1, Math.PI * 0.006], [2, Math.PI * 0.002], [3, -Math.PI * 0.002], [4, -Math.PI * 0.006], [5, -Math.PI * 0.01],],
+          }],
+        }],
+        2: [5, 40, {
+          30: [0, 0, {
+            "launch": [6, [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1],],
+          }],
+        }],
+      }],
+      1: [1, 30, {
+        //break time
+      }],
+    }],
+    2: [-1, 0, {
+      "default": {
+        "spd": Math.PI * 0.003,
+        "visible": 5,
+        "interval": Math.PI * 0.5,
+        "df": Math.PI * 0.23,
+      },
+      0: [1, 3, {
+        1: [10, 1, {
+          0: [0, 0, {
+            "spdplus": [1, [4, Math.PI * 0.0002]],
+          }],
+        }],
+        2: [3, 4, {
+          1: [10, 6, {
+            0: [0, 0, {
+              "launch": [4, [0, 0], [1, 0], [2, 0], [3, 0]],
+            }],
+          }],
+          2: [0, 0, {
+            "launch": [1, [4, 2]],
+          }],
+          3: [10, 6, {
+            0: [0, 0, {
+              "launch": [4, [0, 0], [1, 0], [2, 0], [3, 0]],
+            }],
+          }],
+        }],
+      }],
+    }],
+    3: [-1, 0, {
+      "default": {
+        "spd": Math.PI * 0.004,
+        "visible": 3,
+        "interval": Math.PI * 0.05,
+        "df": Math.PI * 0.35,
+      },
+      0: [1, 50, {
+        1: [0, 0, {
+          "dfplus": [2, [0, Math.PI * 0.05], [2, -Math.PI * 0.05]],
+        }],
+        2: [5, 10, {
+          1: [0, 0, {
+            "launch": [3, [0, 0], [1, 0], [2, 0]],
+          }],
+          2: [7, 2, {
+            1: [0, 0, {
+              "dfplus": [3, [0, -Math.PI * 0.02], [1, -Math.PI * 0.02], [2, -Math.PI * 0.02]],
+            }],
+          }],
+        }],
+        3: [5, 10, {
+          1: [0, 0, {
+            "launch": [3, [0, 0], [1, 0], [2, 0]],
+          }],
+          2: [7, 2, {
+            1: [0, 0, {
+              "dfplus": [3, [0, Math.PI * 0.02], [1, Math.PI * 0.02], [2, Math.PI * 0.02]],
+            }],
+          }],
+        }],
+      }],
+    }],
+    4: [-1, 0, {
+      "default": {
+        "spd": Math.PI * 0.0001,
+        "visible": 3,
+        "interval": Math.PI * 0.6666,
+        "df": 0,
+      },
+      0: [1, 3, {
+        1:[1,30,{
+          
+        }],
+        2: [60, 8, {
+          2: [0, 0, {
+            "launch": [3, [0, 0], [1, 0], [2, 0]],
+          }],
+          3: [0, 0, {
+            "spdplus": [3, [0, Math.PI * 0.0002], [1, Math.PI * 0.0002], [2, Math.PI * 0.0002]],
+          }],
+        }],
+      }],
+    }],
   },
   2: {
 
@@ -292,29 +416,29 @@ const ui_hp_bar = new function() {
     'default': 'MediumSeaGreen',
     'dark': 'MediumSeaGreen',
   };
-  this.strokeStyle={
+  this.strokeStyle = {
     'default': 'black',
     'dark': 'white',
   }
   this.WIDTH = 20;
   this.LINEWIDTH = 10;
-  this.ARCRANGE=[-Math.PI*0.1666,Math.PI*0.6666];
-  this.hp=1;
+  this.ARCRANGE = [-Math.PI * 0.1666, Math.PI * 0.6666];
+  this.hp = 1;
 
-  this.damage=0.08;
-  this.heal=0.5;
-  
-  this.damaged=function(amount){
-    if (amount) if(this.hp-amount<0){this.hp=0;gameOver();} else {this.hp-=amount;} 
-    else if(this.hp-this.damage<0){this.hp=0;gameOver();} else {this.hp-=this.damage;}   
+  this.damage = 0.08;
+  this.heal = 0.5;
+
+  this.damaged = function(amount) {
+    if (amount) if (this.hp - amount < 0) { this.hp = 0; gameOver(); } else { this.hp -= amount; }
+    else if (this.hp - this.damage < 0) { this.hp = 0; gameOver(); } else { this.hp -= this.damage; }
   }
-  this.healed=function(amount){
-    if (amount) this.hp=this.hp+amount>1?1:this.hp+amount;
-    else this.hp=this.hp+this.heal>1?1:this.hp+this.heal;
+  this.healed = function(amount) {
+    if (amount) this.hp = this.hp + amount > 1 ? 1 : this.hp + amount;
+    else this.hp = this.hp + this.heal > 1 ? 1 : this.hp + this.heal;
   }
   this.draw = function(ctx) {
-    const r=ring.INNERRADIUS+this.LINEWIDTH+this.WIDTH*0.5;
-    
+    const r = ring.INNERRADIUS + this.LINEWIDTH + this.WIDTH * 0.5;
+
     ctx.save();
     ctx.translate(kineticCanvas.width * 0.5, kineticCanvas.height * 0.5);
     ctx.rotate(this.ARCRANGE[0]);
@@ -322,18 +446,18 @@ const ui_hp_bar = new function() {
     //ctx.fillStyle = this.fillStyle[theme];
     //ctx.strokeStyle=this.strokeStyle[theme];
 
-    ctx.strokeStyle=this.strokeStyle[theme];
-    
-    ctx.lineWidth=this.WIDTH+this.LINEWIDTH*2;
+    ctx.strokeStyle = this.strokeStyle[theme];
+
+    ctx.lineWidth = this.WIDTH + this.LINEWIDTH * 2;
     ctx.beginPath();
-    ctx.arc(0, 0, r, 0 - this.LINEWIDTH/r, this.ARCRANGE[1] + this.LINEWIDTH/r);
+    ctx.arc(0, 0, r, 0 - this.LINEWIDTH / r, this.ARCRANGE[1] + this.LINEWIDTH / r);
     ctx.stroke();
-    
-    ctx.strokeStyle=this.fillStyle[theme];
-    
-    ctx.lineWidth=this.WIDTH;
+
+    ctx.strokeStyle = this.fillStyle[theme];
+
+    ctx.lineWidth = this.WIDTH;
     ctx.beginPath();
-    ctx.arc(0, 0, r, 0 , this.ARCRANGE[1]*this.hp);
+    ctx.arc(0, 0, r, 0, this.ARCRANGE[1] * this.hp);
     ctx.stroke();
 
     ctx.restore();
@@ -354,6 +478,7 @@ function Launcher(id, azimuth, declination, w) {
   this.x = kineticCanvas.width * 0.5 - (Math.cos(this.az) * this.ORBITRADIUS);
   this.y = kineticCanvas.height * 0.5 - (Math.sin(this.az) * this.ORBITRADIUS);
   this.visible = true;
+
 
   this.nextType = null;
 
@@ -442,7 +567,7 @@ const launchManager = new function() {
 
   this.launchers = [];
   this.level = 0;
-  this.currentPattern = Math.trunc(Math.random() * 5);
+  this.currentPattern = 2;// Math.trunc(Math.random() * Object.keys(patterns[this.level]).length);
   this.pointerStack = [null, null, null];
 
   this.isTransitioning = 50; //transition중일 때 transitionFrame부터 시작해서 0까지 값을 내립니다.
@@ -494,7 +619,14 @@ launchManager.transition = function(param) {
 launchManager.halt = function() {
   this.isTransitioning = this.TRANSITIONFRAME;
   this.pointerStack.fill(null);
-  this.currentPattern = Math.trunc(Math.random() * 6);
+  if (score > 100) {
+    this.level = 2;
+  } else if (score > 50) {
+    this.level = 1;
+  } else {
+    this.level = 1;
+  }
+  this.currentPattern = Math.trunc(Math.random() * Object.keys(patterns[this.level]).length);
   //보너스 점수도 더해줘볼까 말까
 }
 launchManager.calculate = function() {
@@ -525,6 +657,12 @@ launchManager.calculate = function() {
             break;
           case "dfplus":
             for (let i = 1; i <= value[0]; i++) this.launchers[value[i][0]].df += value[i][1];
+            break;
+          case "spdset":
+            for (let i = 1; i <= value[0]; i++) this.launchers[value[i][0]].w = value[i][1];
+            break;
+          case "spdplus":
+            for (let i = 1; i <= value[0]; i++) this.launchers[value[i][0]].w += value[i][1];
             break;
           default:
             break;
@@ -651,7 +789,7 @@ Bullet.prototype.playerCollideCheck = function() {
   const rr = this.size + player.size;
   if (dx * dx + dy * dy < rr * rr) {
     //console.log("collided!:player");
-    uiDraw('hp',['d']);
+    uiDraw('hp', ['d']);
     BulletPool.return(this);
   }
 }
@@ -793,27 +931,27 @@ function kineticDraw() {
     //Calculation
     player.move();
     if (scoreTimer < 100) { scoreTimer++; }
-    else { scoreTimer = 0; scoreDisplay.textContent = parseInt(scoreDisplay.textContent) + 1; }
+    else { scoreTimer = 0; score++; scoreDisplay.textContent = score; }
     launchManager.calculate();
 
     //drawing(+calculating)
     BulletPool.all.forEach(e => { e.move(); e.draw(ctx); });
     player.draw(ctx);
-    launchManager.launchers.forEach(e => { e.move(0, 0); e.draw(ctx); })
+    launchManager.launchers.forEach(e => { e.move(0, 0); e.draw(ctx); });
 
   } else {
     console.log("not available");
     scoreDisplay.textContent = "not available";
     return;
   }
-  if (isGameOver) { return ; }
+  if (isGameOver) { return; }
   raf = window.requestAnimationFrame(kineticDraw);
 }
 function uiDraw(ui, event) {
   if (uiCanvas.getContext) {
     const ctx = uiCanvas.getContext('2d');
     ctx.clearRect(0, 0, uiCanvas.width, uiCanvas.height);
-    
+
     switch (ui) {
       case "all":
         uiDraw('hp');
@@ -821,12 +959,12 @@ function uiDraw(ui, event) {
         uiDraw('escape');
         break;
       case "hp":
-        if (event){
-        if (event[0]==='d'){
-          ui_hp_bar.damaged(event[1]);
-        }else if (event[0]==='h'){
-          ui_hp_bar.healed(event[1]);
-        }
+        if (event) {
+          if (event[0] === 'd') {
+            ui_hp_bar.damaged(event[1]);
+          } else if (event[0] === 'h') {
+            ui_hp_bar.healed(event[1]);
+          }
         }
         break;
       case "score":
@@ -838,28 +976,28 @@ function uiDraw(ui, event) {
     ui_hp_bar.draw(ctx);
   }
 }
-function gameOver(){
+function gameOver() {
   console.log("gameover");
-  isGameOver=true;
+  isGameOver = true;
   window.cancelAnimationFrame(raf);
-  btn1.textContent="refresh";
+  btn1.textContent = "refresh";
 }
 
 function startStopToggleButtonClicked() {
-  if (!isGameOver){
-  if (!isPaused) {
-    isPaused = true;
-    btn1.textContent = "start";
-    window.cancelAnimationFrame(raf);
+  if (!isGameOver) {
+    if (!isPaused) {
+      isPaused = true;
+      btn1.textContent = "start";
+      window.cancelAnimationFrame(raf);
+    }
+    else {
+      isPaused = false;
+      btn1.textContent = "stop";
+      staticDraw();
+      kineticDraw();
+    }
   }
   else {
-    isPaused = false;
-    btn1.textContent = "stop";
-    staticDraw();
-    kineticDraw();
-  }
-  }
-  else{
     location.reload();
   }
 }
