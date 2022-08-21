@@ -196,14 +196,14 @@ const patterns = {
     2: [-1, 0, {
       "default": {
         "spd": Math.PI * 0.003,
-        "visible": 5,
+        "visible": 6,
         "interval": Math.PI * 0.5,
         "df": Math.PI * 0.23,
       },
       0: [1, 3, {
         1: [10, 1, {
           0: [0, 0, {
-            "spdplus": [1, [4, Math.PI * 0.0002]],
+            "spdplus": [2, [4, Math.PI * 0.0002],[5, Math.PI * 0.00023]],
           }],
         }],
         2: [3, 4, {
@@ -213,7 +213,7 @@ const patterns = {
             }],
           }],
           2: [0, 0, {
-            "launch": [1, [4, 2]],
+            "launch": [2, [4, 2],[5,2]],
           }],
           3: [10, 6, {
             0: [0, 0, {
@@ -277,9 +277,74 @@ const patterns = {
         }],
       }],
     }],
+    5: [-1,0,{
+      "default": {
+        "spd": Math.PI * 0.01,
+        "visible": 5,
+        "interval": Math.PI * 0.25,
+        "df": 0,
+      },
+      0:[1,3,{
+      0:[3,60,{
+        35:[20,1,{
+          0:[0,0,{
+            "spdplus":[5,[0,Math.PI*0.001],[1,Math.PI*0.001],[2,Math.PI*0.001],[3,Math.PI*0.001],[4,Math.PI*0.001]],
+          }],
+        }],
+        36:[20,1,{
+          0:[0,0,{
+            "spdplus":[5,[0,-Math.PI*0.001],[1,-Math.PI*0.001],[2,-Math.PI*0.001],[3,-Math.PI*0.001],[4,-Math.PI*0.001]],
+          }],
+        }],
+        38:[0,0,{
+          "launch":[5,[0,2],[1,2],[2,2],[3,2],[4,2]],
+        }],
+      }],
+        1:[1,50,{}],
+      }],
+    }],
   },
   2: {
-
+    0: [-1,0,{
+      "default": {
+        "spd": Math.PI * 0.003,
+        "visible": 9,
+        "interval": Math.PI * 0.2222,
+        "df": 0,
+      },
+      0:[1,4,{
+        1:[1,30,{}],
+        2:[8,72,{
+          7:[0,0,{
+            "launch":[1,[0,1]],
+          }],
+          15:[0,0,{
+            "launch":[1,[1,1]],
+          }],
+          23:[0,0,{
+            "launch":[1,[2,1]],
+          }],
+          31:[0,0,{
+            "launch":[1,[3,1]],
+          }],
+          39:[0,0,{
+            "launch":[1,[4,1]],
+          }],
+          47:[0,0,{
+            "launch":[1,[5,1]],
+          }],
+          55:[0,0,{
+            "launch":[1,[6,1]],
+          }],
+          63:[0,0,{
+            "launch":[1,[7,1]],
+          }],
+          71:[0,0,{
+            "launch":[1,[8,1]],
+          }],
+        }], 
+      }],
+    }],
   },
 }
 
@@ -566,8 +631,8 @@ Launcher.prototype.draw = function(ctx) {
 const launchManager = new function() {
 
   this.launchers = [];
-  this.level = 0;
-  this.currentPattern = 2;// Math.trunc(Math.random() * Object.keys(patterns[this.level]).length);
+  this.level = 1;
+  this.currentPattern = 5;// Math.trunc(Math.random() * Object.keys(patterns[this.level]).length);
   this.pointerStack = [null, null, null];
 
   this.isTransitioning = 50; //transition중일 때 transitionFrame부터 시작해서 0까지 값을 내립니다.
@@ -624,8 +689,9 @@ launchManager.halt = function() {
   } else if (score > 50) {
     this.level = 1;
   } else {
-    this.level = 1;
+    this.level = 0;
   }
+  this.level=1;
   this.currentPattern = Math.trunc(Math.random() * Object.keys(patterns[this.level]).length);
   //보너스 점수도 더해줘볼까 말까
 }
@@ -909,6 +975,7 @@ window.addEventListener('keyup', e => { keyEventManager.keyPressOrigin[e.key] = 
 
 
 function staticDraw() {
+  window.heig
   if (staticCanvas.getContext) {
     const ctx = staticCanvas.getContext('2d', { alpha: false });
 

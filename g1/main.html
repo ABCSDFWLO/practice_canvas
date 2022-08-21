@@ -1,0 +1,25 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>replit</title>
+  <link href="style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body onload="staticDraw();">
+  <button id="btn1" onclick="startStopToggleButtonClicked();">start</button>
+  <div id="container">
+    <div id="stage">
+      <canvas id="static" width="480" height="480"></canvas>
+      <canvas id="ui" width="480" height="480"></canvas>
+      <div id="score">0</div>
+      <canvas id="kinetic" width="480" height="480"></canvas>
+    </div>
+    <script src="script.js"></script>
+  </div>
+</body>
+
+</html>

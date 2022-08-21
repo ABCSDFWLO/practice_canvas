@@ -1,0 +1,17 @@
+1. autosize
+2. start/pause 
+
+//1회성 effect들과 상시 표시할 ui들을 구별해야하나?
+
+//layer를 div로, div 겹치기
+//layer 0
+  -score
+  -background
+  -ring
+//layer 1
+  -ui_hp_bar
+  -ui_button
+//layer 2
+  -ingame kinetic objectssss
+//layer 3
+  -effects
