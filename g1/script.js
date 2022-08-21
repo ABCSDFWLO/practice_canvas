@@ -307,7 +307,7 @@ const patterns = {
   2: {
     0: [-1,0,{
       "default": {
-        "spd": Math.PI * 0.003,
+        "spd": Math.PI * 0.002,
         "visible": 9,
         "interval": Math.PI * 0.2222,
         "df": 0,
@@ -631,8 +631,8 @@ Launcher.prototype.draw = function(ctx) {
 const launchManager = new function() {
 
   this.launchers = [];
-  this.level = 1;
-  this.currentPattern = 5;// Math.trunc(Math.random() * Object.keys(patterns[this.level]).length);
+  this.level = 0;
+  this.currentPattern = Math.trunc(Math.random() * Object.keys(patterns[this.level]).length);
   this.pointerStack = [null, null, null];
 
   this.isTransitioning = 50; //transition중일 때 transitionFrame부터 시작해서 0까지 값을 내립니다.
@@ -685,13 +685,14 @@ launchManager.halt = function() {
   this.isTransitioning = this.TRANSITIONFRAME;
   this.pointerStack.fill(null);
   if (score > 100) {
+    if(this.level!==2) uiDraw('hp', ['h']);
     this.level = 2;
   } else if (score > 50) {
+    if(this.level!==1) uiDraw('hp', ['h']);
     this.level = 1;
   } else {
     this.level = 0;
   }
-  this.level=1;
   this.currentPattern = Math.trunc(Math.random() * Object.keys(patterns[this.level]).length);
   //보너스 점수도 더해줘볼까 말까
 }
