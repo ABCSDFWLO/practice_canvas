@@ -203,7 +203,7 @@ const patterns = {
       0: [1, 3, {
         1: [10, 1, {
           0: [0, 0, {
-            "spdplus": [2, [4, Math.PI * 0.0002],[5, Math.PI * 0.00023]],
+            "spdplus": [2, [4, Math.PI * 0.0002], [5, Math.PI * 0.00023]],
           }],
         }],
         2: [3, 4, {
@@ -213,7 +213,7 @@ const patterns = {
             }],
           }],
           2: [0, 0, {
-            "launch": [2, [4, 2],[5,2]],
+            "launch": [2, [4, 2], [5, 2]],
           }],
           3: [10, 6, {
             0: [0, 0, {
@@ -264,8 +264,8 @@ const patterns = {
         "df": 0,
       },
       0: [1, 3, {
-        1:[1,30,{
-          
+        1: [1, 30, {
+
         }],
         2: [60, 8, {
           2: [0, 0, {
@@ -277,72 +277,191 @@ const patterns = {
         }],
       }],
     }],
-    5: [-1,0,{
+    5: [-1, 0, {
       "default": {
         "spd": Math.PI * 0.01,
         "visible": 5,
         "interval": Math.PI * 0.25,
         "df": 0,
       },
-      0:[1,3,{
-      0:[3,60,{
-        35:[20,1,{
-          0:[0,0,{
-            "spdplus":[5,[0,Math.PI*0.001],[1,Math.PI*0.001],[2,Math.PI*0.001],[3,Math.PI*0.001],[4,Math.PI*0.001]],
+      0: [1, 3, {
+        1: [3, 60, {
+          35: [20, 1, {
+            0: [0, 0, {
+              "spdplus": [5, [0, Math.PI * 0.001], [1, Math.PI * 0.001], [2, Math.PI * 0.001], [3, Math.PI * 0.001], [4, Math.PI * 0.001]],
+            }],
+          }],
+          36: [20, 1, {
+            0: [0, 0, {
+              "spdplus": [5, [0, -Math.PI * 0.001], [1, -Math.PI * 0.001], [2, -Math.PI * 0.001], [3, -Math.PI * 0.001], [4, -Math.PI * 0.001]],
+            }],
+          }],
+          38: [0, 0, {
+            "launch": [5, [0, 2], [1, 2], [2, 2], [3, 2], [4, 2]],
           }],
         }],
-        36:[20,1,{
-          0:[0,0,{
-            "spdplus":[5,[0,-Math.PI*0.001],[1,-Math.PI*0.001],[2,-Math.PI*0.001],[3,-Math.PI*0.001],[4,-Math.PI*0.001]],
-          }],
+        2: [1, 50, {
+
         }],
-        38:[0,0,{
-          "launch":[5,[0,2],[1,2],[2,2],[3,2],[4,2]],
-        }],
-      }],
-        1:[1,50,{}],
       }],
     }],
   },
   2: {
-    0: [-1,0,{
+    0: [-1, 0, {
       "default": {
         "spd": Math.PI * 0.002,
         "visible": 9,
         "interval": Math.PI * 0.2222,
         "df": 0,
       },
-      0:[1,4,{
-        1:[1,30,{}],
-        2:[8,72,{
-          7:[0,0,{
-            "launch":[1,[0,1]],
+      0: [1, 4, {
+        1: [1, 30, {}],
+        2: [8, 72, {
+          7: [0, 0, {
+            "launch": [1, [0, 4]],
           }],
-          15:[0,0,{
-            "launch":[1,[1,1]],
+          15: [0, 0, {
+            "launch": [1, [1, 4]],
           }],
-          23:[0,0,{
-            "launch":[1,[2,1]],
+          23: [0, 0, {
+            "launch": [1, [2, 4]],
           }],
-          31:[0,0,{
-            "launch":[1,[3,1]],
+          31: [0, 0, {
+            "launch": [1, [3, 4]],
           }],
-          39:[0,0,{
-            "launch":[1,[4,1]],
+          39: [0, 0, {
+            "launch": [1, [4, 4]],
           }],
-          47:[0,0,{
-            "launch":[1,[5,1]],
+          47: [0, 0, {
+            "launch": [1, [5, 4]],
           }],
-          55:[0,0,{
-            "launch":[1,[6,1]],
+          55: [0, 0, {
+            "launch": [1, [6, 4]],
           }],
-          63:[0,0,{
-            "launch":[1,[7,1]],
+          63: [0, 0, {
+            "launch": [1, [7, 4]],
           }],
-          71:[0,0,{
-            "launch":[1,[8,1]],
+          71: [0, 0, {
+            "launch": [1, [8, 4]],
           }],
-        }], 
+        }],
+        3: [7, 60, {
+          3: [0, 0, {
+            "spdplus": [9, [0, Math.PI * 0.002], [1, Math.PI * 0.002], [2, Math.PI * 0.002], [3, Math.PI * 0.002], [4, Math.PI * 0.002], [5, Math.PI * 0.002], [6, Math.PI * 0.002], [7, Math.PI * 0.002], [8, Math.PI * 0.002]],
+          }],
+        }],
+      }],
+    }],
+    1: [-1, 0, {
+      "default": {
+        "spd": Math.PI * 0.0005,
+        "visible": 4,
+        "interval": Math.PI * 0.6666,
+        "df": 0,
+      },
+      0: [1, 6, {
+        1: [1, 30, {
+          2: [75, 1, {
+            0: [0, 0, {
+              "spdplus": [4, [0, Math.PI * 0.0001], [1, Math.PI * 0.0001], [2, Math.PI * 0.0001], [3, Math.PI * 0.00015]],
+            }],
+          }],
+          5: [0, 0, {
+            "dfset": [2, [2, Math.PI * 0.1], [1, Math.PI * 0.2]],
+            "spdset": [1, [3, Math.PI * 0.01]],
+          }],
+        }],
+        2: [7, 3, {
+          1: [10, 7, {
+            2: [0, 0, {
+              "launch": [1, [0, 0]],
+            }],
+            4: [0, 0, {
+              "launch": [1, [1, 1]],
+            }],
+            6: [0, 0, {
+              "launch": [1, [2, 3]],
+            }],
+          }],
+          2: [0, 0, {
+            "launch": [1, [3, 2]],
+          }],
+        }],
+      }],
+    }],
+    2: [-1, 0, {
+      "default": {
+        "spd": Math.PI * 0.008,
+        "visible": 3,
+        "interval": Math.PI * 0.6666,
+        "df": Math.PI * 0.4,
+      },
+      0: [1, 7, {
+        1: [1, 40, {}],
+        2: [4, 6, {
+          2: [2, 6, {
+            2: [0, 0, {
+              "dfplus": [1, [0, -Math.PI * 0.05]],
+            }],
+            3: [0, 0, {
+              "launch": [1, [0, 3]],
+            }],
+          }],
+          3: [2, 6, {
+            2: [0, 0, {
+              "dfplus": [2, [0, -Math.PI * 0.05], [1, -Math.PI * 0.05]],
+            }],
+            3: [0, 0, {
+              "launch": [2, [0, 3], [1, 3]],
+            }],
+          }],
+          4: [2, 6, {
+            2: [0, 0, {
+              "dfplus": [1, [1, -Math.PI * 0.05]],
+            }],
+            3: [0, 0, {
+              "launch": [1, [1, 3]],
+            }],
+          }],
+        }],
+        3: [20, 2, {
+          1: [0, 0, {
+            "dfplus": [1, [1, Math.PI * 0.02]],
+            "spdplus": [3, [0, -Math.PI * 0.002], [1, -Math.PI * 0.002], [2, -Math.PI * 0.002]],
+          }],
+        }],
+        4: [20, 2, {
+          1: [0, 0, {
+            "dfplus": [1, [1, Math.PI * 0.02]],
+            "spdplus": [3, [0, Math.PI * 0.002], [1, Math.PI * 0.002], [2, Math.PI * 0.002]],
+          }],
+        }],
+        5: [4, 6, {
+          2: [2, 6, {
+            2: [0, 0, {
+              "dfplus": [1, [1, -Math.PI * 0.05]],
+            }],
+            3: [0, 0, {
+              "launch": [1, [1, 3]],
+            }],
+          }],
+          3: [2, 6, {
+            2: [0, 0, {
+              "dfplus": [2, [1, -Math.PI * 0.05], [2, -Math.PI * 0.05]],
+            }],
+            3: [0, 0, {
+              "launch": [2, [1, 3], [2, 3]],
+            }],
+          }],
+          4: [2, 6, {
+            2: [0, 0, {
+              "dfplus": [1, [2, -Math.PI * 0.05]],
+            }],
+            3: [0, 0, {
+              "launch": [1, [2, 3]],
+            }],
+          }],
+        }],
       }],
     }],
   },
@@ -360,9 +479,11 @@ const player = new function(x = 240, y = 240, dir = 0, v = 0, w = 0) {
   this.wControling = false;
 
   this.VLIMIT = 3;
-  this.WLIMIT = Math.PI * 0.03;
+  this.WLIMIT = Math.PI * 0.03; //polar
+  //this.WLIMIT = 3; //cartesian
   this.VACC = 0.5;
-  this.WACC = Math.PI * 0.005;
+  this.WACC = Math.PI * 0.005; //polar
+  //this.WACC = 0.5;  //cartesian
 
   this.LINEWIDTH = 7;
   this.SIZERADIUS = 7;
@@ -388,15 +509,18 @@ player.move = function() {
   const rx = this.x - kineticCanvas.width * 0.5;
   const ry = this.y - kineticCanvas.height * 0.5;
   const rr = ring.INNERRADIUS - this.SIZERADIUS;
-  const dx = Math.cos(this.dir) * this.v;
-  const dy = Math.sin(this.dir) * this.v;
+  const dx = Math.cos(this.dir) * this.v; //polar
+  //const dx = this.w; //cartesian
+  const dy = Math.sin(this.dir) * this.v; //polar
+  //const dy = -this.v; //cartesian
   const REPELNESS = 0.005;
   if (rx * rx + ry * ry > rr * rr && dx * rx + dy * ry > 0) {
     this.v = 0;
+    //this.w=0; //cartesian
     this.x += -rx * REPELNESS;
     this.y += -ry * REPELNESS;
   }
-  this.dir += this.w;
+  this.dir += this.w; //polar
   this.x += dx;
   this.y += dy;
   if (!this.wControling) {
@@ -631,7 +755,7 @@ Launcher.prototype.draw = function(ctx) {
 const launchManager = new function() {
 
   this.launchers = [];
-  this.level = 0;
+  this.level = 2;
   this.currentPattern = Math.trunc(Math.random() * Object.keys(patterns[this.level]).length);
   this.pointerStack = [null, null, null];
 
@@ -685,14 +809,15 @@ launchManager.halt = function() {
   this.isTransitioning = this.TRANSITIONFRAME;
   this.pointerStack.fill(null);
   if (score > 100) {
-    if(this.level!==2) uiDraw('hp', ['h']);
+    if (this.level !== 2) uiDraw('hp', ['h']);
     this.level = 2;
   } else if (score > 50) {
-    if(this.level!==1) uiDraw('hp', ['h']);
+    if (this.level !== 1) uiDraw('hp', ['h']);
     this.level = 1;
   } else {
     this.level = 0;
   }
+  this.level = 2;
   this.currentPattern = Math.trunc(Math.random() * Object.keys(patterns[this.level]).length);
   //보너스 점수도 더해줘볼까 말까
 }
@@ -765,7 +890,7 @@ function Bullet(type, index) {
   this.size = 0;
   this.spd = 0;
   this.enabled = false;
-  this.life = 0;
+  this.ability = 0;
   this.nx = 0;
   this.ny = 0;
 
@@ -774,20 +899,22 @@ function Bullet(type, index) {
     const typeMap = {
       0: [5, 5, null],
       1: [10, 3, null],
-      2: [5, 2, 150],
+      2: [2.5, 2, 150], //missile
+      3: [5, 0.5, 0.03], //acc
+      4: [7, 0.8, null],
     }
     this.x = x;
     this.y = y;
     this.dir = dir;
     this.size = typeMap[this.type][0];
     this.spd = typeMap[this.type][1];
-    this.life = typeMap[this.type][2];
+    this.ability = typeMap[this.type][2];
   };
 
   this.LINEWIDTH = 5;
   this.fillStyle = {
     'default': 'red',
-    'dark': 'white',
+    'dark': '#AA0000',
   }
   this.strokeStyle = {
     'default': 'black',
@@ -798,19 +925,29 @@ function Bullet(type, index) {
 Bullet.prototype.move = function() {
   if (this.enabled) {
     let dx = 0, dy = 0;
-    if (this.type < 2) {
-      dx = this.spd * Math.cos(this.dir);
-      dy = this.spd * Math.sin(this.dir);
-    } else if (this.type === 2) {
-      if (this.life > 0) {
-        this.nx = player.x - this.x;
-        this.ny = player.y - this.y;
-        this.life--;
-      }
-      const r = 1 / Math.sqrt(this.nx * this.nx + this.ny * this.ny);
-      dx = this.nx * r * this.spd;
-      dy = this.ny * r * this.spd;
-      this.dir = Math.atan(this.ny / this.nx);
+    switch (this.type) {
+      case 0:
+      case 4:
+      case 1:
+        dx = this.spd * Math.cos(this.dir);
+        dy = this.spd * Math.sin(this.dir);
+        break;
+      case 2:
+        if (this.ability > 0) {
+          this.nx = player.x - this.x;
+          this.ny = player.y - this.y;
+          this.ability--;
+        }
+        const r = 1 / Math.sqrt(this.nx * this.nx + this.ny * this.ny);
+        dx = this.nx * r * this.spd;
+        dy = this.ny * r * this.spd;
+        this.dir = Math.atan2(this.ny, this.nx);
+        break;
+      case 3:
+        this.spd += this.ability;
+        dx = this.spd * Math.cos(this.dir);
+        dy = this.spd * Math.sin(this.dir);
+        break;
     }
     this.x += dx;
     this.y += dy;
@@ -831,6 +968,7 @@ Bullet.prototype.draw = function(ctx) {
 
     switch (this.type) {
       case 0:
+      case 4:
       case 1:
         ctx.beginPath();
         ctx.arc(0, 0, this.size, 0, Math.PI * 2);
@@ -839,9 +977,20 @@ Bullet.prototype.draw = function(ctx) {
         ctx.stroke();
         break;
       case 2:
-        ctx.translate(this.size * 0.5, this.size * 0.5);
+        //ctx.translate(this.size*2, this.size*2);
         ctx.rotate(Math.PI * 0.25 + this.dir);
-        ctx.rect(-this.size, -this.size, this.size * 2, this.size * 2);
+        ctx.rect(-this.size * 4, -this.size * 4, this.size * 4, this.size * 4);
+        ctx.fill();
+        ctx.stroke();
+        break;
+      case 3:
+        ctx.rotate(this.dir);
+        ctx.beginPath();
+        ctx.moveTo(this.size * 2, 0);
+        ctx.lineTo(-this.size, this.size * 1.732);
+        ctx.lineTo(-this.size * 0.5, 0);
+        ctx.lineTo(-this.size, -this.size * 1.732);
+        ctx.closePath();
         ctx.fill();
         ctx.stroke();
         break;
