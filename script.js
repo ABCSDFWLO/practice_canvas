@@ -10,18 +10,17 @@ let score = 0;
 let isPaused = true;
 let isGameOver = false;
 
-const patterns = {
-  /*
+/*
   Pattern Rule
-  Frame:[iteration,length,{context}]
+Frame: [iteration, length, { context }]
   context may have another frame set.
-  empty context is possible ; to implement delay
+  empty context is possible; to implement delay
   
-  exception 1 : single action frame(ex:"launch":[0,0],"dfset"[0,0]...) has iteration of 0.
+  exception 1 : single action frame(ex: "launch": [0, 0], "dfset"[0, 0]...) has iteration of 0.
   exception 2 : pattern's highest frame must have "default":{context}
-  exception 2-1 : "default" having all parameters("spd","visible","interval","df") is recommended.
-  */
-
+  exception 2 - 1 : "default" having all parameters("spd", "visible", "interval", "df") is recommended.
+*/
+const patterns = {
   0: {
     0: [-1, 0, {
       "default": {
@@ -464,9 +463,29 @@ const patterns = {
         }],
       }],
     }],
+    3: [-1, 0, {
+      "default": {
+        "spd": Math.PI * 0.001,
+        "visible": 7,
+        "interval": Math.PI * 0.285714,
+        "df": 0,
+      },
+      0: [5, 10, {
+        1: [4, 7, {
+          1: [0, 0, {
+            "launch": [7, [0, 4], [1, 4], [2, 4], [3, 4], [4, 4], [5, 4], [6, 4]],
+          }],
+        }],
+        2: [4, 7, {
+          6: [0, 0, {
+            "launch": [7, [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3]],
+          }],
+        }],
+        3: [1, 30, {}],
+      }],
+    }],
   },
 }
-
 
 const player = new function(x = 240, y = 240, dir = 0, v = 0, w = 0) {
   this.x = x;
@@ -755,7 +774,7 @@ Launcher.prototype.draw = function(ctx) {
 const launchManager = new function() {
 
   this.launchers = [];
-  this.level = 2;
+  this.level = 0;
   this.currentPattern = Math.trunc(Math.random() * Object.keys(patterns[this.level]).length);
   this.pointerStack = [null, null, null];
 
@@ -817,7 +836,7 @@ launchManager.halt = function() {
   } else {
     this.level = 0;
   }
-  this.level = 2;
+  //this.level = 2;
   this.currentPattern = Math.trunc(Math.random() * Object.keys(patterns[this.level]).length);
   //보너스 점수도 더해줘볼까 말까
 }
@@ -1064,7 +1083,7 @@ const keyEventManager = new function() {
     "moveUp": "i",
     "moveDown": "k",
     "action0": "z",
-    "action1": "Escape",
+    "escape": "Escape",
   }
   this.keyPressResult = {
     "moveLeft": false,
@@ -1073,12 +1092,8 @@ const keyEventManager = new function() {
     "moveDown": false,
   }
 }();
-keyEventManager.setKey = function(muKey, mdKey, mlKey, mrKey, ma0Key) {
-  this.keyPressMap["moveUp"] = muKey;
-  this.keyPressMap["moveDown"] = mdKey;
-  this.keyPressMap["moveLeft"] = mlKey;
-  this.keyPressMap["moveRight"] = mrKey;
-  this.keyPressMap["action0"] = ma0Key
+keyEventManager.setKey = function(action,key) {
+  if (action!==undefined && action!==null) this.keyPressMap[action]=key;
 }
 keyEventManager.keyPressUpdate = function() {
   for (const [key, value] of Object.entries(this.keyPressMap)) {
@@ -1122,10 +1137,10 @@ keyEventManager.debugLaunch = function() {
 
 window.addEventListener('keydown', e => { keyEventManager.keyPressOrigin[e.key] = true; keyEventManager.keyPressUpdate(); });
 window.addEventListener('keyup', e => { keyEventManager.keyPressOrigin[e.key] = false; keyEventManager.keyPressUpdate(); });
-
+window.addEventListener('mousemove', e => { console.log(e); });
+//window.addEventListener('keypress', e=> { console.log(e); if(e.key==="w")startStopToggleButtonClicked(); });
 
 function staticDraw() {
-  window.heig
   if (staticCanvas.getContext) {
     const ctx = staticCanvas.getContext('2d', { alpha: false });
 

@@ -1,0 +1,24 @@
+1. autosize & main ui 
+2. start/pause 
+
+//1회성 effect들과 상시 표시할 ui들을 구별해야하나?
+
+//layer를 div로, div 겹치기
+//layer 0
+  -score
+  -background
+  -ring
+//layer 1
+  -ui_hp_bar
+//layer 2
+  -ingame kinetic objectssss
+//layer 3
+  -effects
+//layer 4
+  -button
+  -sidebar
+
+09.28 comment : 그냥 다 합쳐버리죠? 어차피 레이어링이 필요할 정도로 자원이 많지도 않은데. 지금 상황에선 오히려 canvas가 늘어남에 따른 부담만 더 커질 뿐
+--> 근데 그러면 css라던가 그런거 다시 다짜야해서 좀 복잡한데요..?
+아 시발 그냥 화면 꽉차게 캔버스 하나만 빨리 냅두고 나머지 다 없애버려 점수까진 그렇다 쳐도
+ㅇㅋ
